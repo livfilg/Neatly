@@ -59,7 +59,7 @@ npm run lint     # check code style issues
 
 ## Deploying
 
-The plan is to deploy on [Vercel](https://vercel.com), with a preview deployment for every branch and production deploying from `main`. This isn't connected yet — that's part of a later milestone.
+This project deploys on [Netlify](https://netlify.com), connected to this GitHub repo. Netlify auto-detects Next.js — no extra config needed. Once connected in the Netlify dashboard, every push to `main` deploys to production, and other branches get their own deploy previews.
 
 ## Project structure
 
