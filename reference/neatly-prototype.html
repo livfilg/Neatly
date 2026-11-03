@@ -1,0 +1,1600 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Neatly Website</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+<script src="https://cdn.tailwindcss.com/3.4.17"></script>
+<script>
+  tailwind.config = {
+    theme: { extend: {
+      colors: { ink:'#172B3A', mute:'#5E6E7A', line:'#E3ECF1', sky:'#A8D8F0', soft:'#DDF2FC', mist:'#F3FAFE', mint:'#B9E6D3', deep:'#276C90', warn:'#F3D9A4', warnink:'#7A4E00', bad:'#F6D3D0', badink:'#8E2B22' },
+      fontFamily: { sans: ['Inter','-apple-system','"SF Pro Text"','"Segoe UI"','Roboto','Helvetica','Arial','sans-serif'] }
+    } }
+  };
+</script>
+<style>
+  /* Layout: one shell with a portal switcher; each portal is a real web app view sharing one in-memory store. Single light theme by design (the Neatly brand is white and baby blue). */
+  :root {
+    --white:#FFFFFF; --sky:#A8D8F0; --soft:#DDF2FC; --mist:#F3FAFE;
+    --ink:#172B3A; --mute:#5E6E7A; --line:#E3ECF1; --mint:#B9E6D3; --deep:#276C90;
+    --font: 'Inter', -apple-system, 'SF Pro Text', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    color-scheme: light;
+  }
+  html, body { background: var(--white); color: var(--ink); }
+  body { font-family: var(--font); -webkit-font-smoothing: antialiased; font-size: 15px; }
+  body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 60; background: var(--white); }
+  .gutter { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+  .wrapw { max-width: 1200px; margin: 0 auto; }
+  h1, h2, h3 { text-wrap: balance; letter-spacing: -0.02em; }
+  .tnum { font-variant-numeric: tabular-nums; }
+  .btn { height: 44px; padding: 0 18px; border-radius: 12px; font-weight: 600; font-size: 14px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; transition: background .15s, border-color .15s, transform .1s; white-space: nowrap; }
+  .btn:active { transform: scale(.98); }
+  .btn-p { background: var(--sky); color: var(--ink); } .btn-p:hover { background: #95CDE9; }
+  .btn-p:disabled { background: var(--line); color: var(--mute); cursor: default; }
+  .btn-d { background: var(--ink); color: #fff; } .btn-d:hover { background: #22394A; }
+  .btn-g { background: #fff; border: 1px solid var(--line); color: var(--ink); } .btn-g:hover { border-color: var(--sky); background: var(--mist); }
+  .btn-s { height: 34px; padding: 0 12px; font-size: 13px; border-radius: 10px; }
+  .card { background: #fff; border: 1px solid var(--line); border-radius: 18px; }
+  .lift { box-shadow: 0 1px 2px rgba(23,43,58,.04), 0 10px 24px -14px rgba(23,43,58,.18); }
+  .field { height: 44px; border: 1px solid var(--line); border-radius: 12px; padding: 0 12px; font-size: 14px; background: #fff; color: var(--ink); width: 100%; font-family: inherit; }
+  textarea.field { height: auto; padding: 10px 12px; }
+  .field:focus { outline: none; border-color: var(--deep); box-shadow: 0 0 0 3px var(--soft); }
+  button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible { outline: 2px solid var(--deep); outline-offset: 2px; }
+  .lbl { font-size: 11.5px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--mute); }
+  .eyebrow { font-size: 12px; font-weight: 600; letter-spacing: .16em; text-transform: uppercase; color: var(--deep); }
+  .pill { display: inline-flex; align-items: center; gap: 5px; height: 24px; padding: 0 9px; border-radius: 999px; font-size: 12px; font-weight: 600; white-space: nowrap; }
+  .tbl { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+  .tbl th { text-align: left; font-size: 11.5px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--mute); padding: 10px 12px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+  .tbl td { padding: 12px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+  .tbl tr:last-child td { border-bottom: none; }
+  .scrollx { overflow-x: auto; }
+  .hscroll { overflow-x: auto; scrollbar-width: none; } .hscroll::-webkit-scrollbar { display: none; }
+  .fade { animation: fade .25s ease both; } @keyframes fade { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+  .pulse { animation: pulse 1.6s ease-in-out infinite; } @keyframes pulse { 50% { opacity: .4; } }
+  .toastbox { position: fixed; right: max(16px, env(safe-area-inset-right, 0px)); bottom: calc(16px + env(safe-area-inset-bottom, 0px)); z-index: 70; display: flex; flex-direction: column; gap: 8px; width: min(380px, calc(100vw - 32px)); }
+  .doc p { line-height: 1.65; }
+  @media (max-width: 1023px) { .toastbox { bottom: calc(84px + env(safe-area-inset-bottom, 0px)); } }
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+</style>
+
+</head><body style="margin:0"><div id="root"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js"></script>
+<script>window.react = window.React;</script>
+<script src="https://unpkg.com/lucide-react@0.263.1/dist/umd/lucide-react.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+
+<script type="text/babel" data-presets="react">
+const { useState, useEffect, useRef, createContext, useContext } = React;
+const LUC = window.LucideReact || {};
+function Ic({ n, s = 18, w = 1.75, className }) {
+  const C = LUC[n];
+  if (!C) return <span className={className} style={{ width: s, height: s, display: 'inline-block', borderRadius: 99, border: '1.5px solid currentColor' }} />;
+  return <C size={s} strokeWidth={w} className={className} />;
+}
+
+/* ============ dates ============ */
+const TODAY = '2026-11-03';
+const D = (iso) => { const [y, m, d] = iso.split('-').map(Number); return new Date(y, m - 1, d); };
+const iso = (dt) => `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}-${String(dt.getDate()).padStart(2, '0')}`;
+const addDays = (s, n) => { const d = D(s); d.setDate(d.getDate() + n); return iso(d); };
+const daysFrom = (a, b) => Math.round((D(b) - D(a)) / 86400000);
+const fmtDay = (s) => D(s).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+const fmtShort = (s) => D(s).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+const money = (n) => (n < 0 ? '−$' : '$') + Math.abs(n).toLocaleString('en-US');
+
+/* ============ catalog ============ */
+const ZIPS = { '06107': 'West Hartford', '06117': 'West Hartford', '06119': 'West Hartford', '06110': 'West Hartford', '06105': 'Hartford', '06106': 'Hartford', '06112': 'Hartford', '06114': 'Hartford', '06032': 'Farmington', '06002': 'Bloomfield', '06111': 'Newington', '06001': 'Avon', '06033': 'Glastonbury', '06109': 'Wethersfield', '06070': 'Simsbury', '06040': 'Manchester' };
+const HOODS = { 'West Hartford': ['Elmwood', 'West Hartford Center', 'Bishops Corner'], Hartford: ['West End', 'Blue Hills', 'Parkville'], Farmington: ['Unionville', 'Farmington Village'], Bloomfield: ['Blue Hills', 'Bloomfield Center'], Newington: ['Newington Center'], Avon: ['Avon Center'], Glastonbury: ['South Glastonbury'], Wethersfield: ['Old Wethersfield'], Simsbury: ['Simsbury Center'], Manchester: ['Manchester Center'] };
+const LEVEL_META = {
+  light: { name: 'Light Refresh', icon: 'Feather', desc: 'Basic upkeep between deeper cleans.', hours: 2, inc: ['Dusting', 'Vacuuming', 'Sweeping', 'Surface wiping', 'Bathroom refresh'] },
+  standard: { name: 'Standard Clean', icon: 'Sparkles', desc: 'Regular home maintenance, top to bottom.', hours: 3, inc: ['Dust all surfaces', 'Vacuum and mop', 'Kitchen counters and stovetop', 'Full bathrooms', 'Trash out', 'Tidy up'] },
+  deep: { name: 'Deep Clean', icon: 'Droplets', desc: 'Built-up grime, baseboards, inside appliances.', hours: 5, inc: ['Everything in Standard', 'Baseboards and doors', 'Kitchen degreasing', 'Tile and grout scrub', 'Hard-to-reach areas'] },
+  move: { name: 'Move-In / Move-Out', icon: 'Truck', desc: 'Empty home, inside cabinets and appliances.', hours: 4.5, inc: ['Everything in Deep', 'Inside cabinets and drawers', 'Inside fridge and oven', 'Wall spot cleaning'] },
+};
+const ADDONS = [{ id: 'fridge', name: 'Inside fridge', price: 25 }, { id: 'oven', name: 'Inside oven', price: 30 }, { id: 'windows', name: 'Interior windows', price: 20 }, { id: 'laundry', name: 'Laundry and folding', price: 15 }, { id: 'dishes', name: 'Dishes', price: 15 }, { id: 'cabinets', name: 'Inside cabinets', price: 20 }];
+const SQFT = ['Under 750', '750–1,500', '1,500–2,500', '2,500+'];
+const SQ_ADD = { 'Under 750': 0, '750–1,500': 0, '1,500–2,500': 20, '2,500+': 45 };
+const FREQ = { once: 'One time', weekly: 'Every week', biweekly: 'Every 2 weeks', monthly: 'Every 4 weeks' };
+const FREQ_DAYS = { weekly: 7, biweekly: 14, monthly: 28 };
+const TIMES = ['8:00 AM', '9:00 AM', '10:00 AM', '11:00 AM', '12:00 PM', '1:00 PM', '2:00 PM', '3:00 PM'];
+const STATUS = {
+  unassigned: { label: 'Finding cleaner', cls: 'bg-warn text-warnink' },
+  assigned: { label: 'Confirmed', cls: 'bg-soft text-deep' },
+  en_route: { label: 'On the way', cls: 'bg-soft text-deep' },
+  in_progress: { label: 'Cleaning now', cls: 'bg-sky text-ink' },
+  completed: { label: 'Completed', cls: 'bg-mint text-ink' },
+  cancelled: { label: 'Cancelled', cls: 'bg-line text-mute' },
+};
+const FLOW = ['unassigned', 'assigned', 'en_route', 'in_progress', 'completed'];
+
+function quote(s, b) {
+  const L = s.levels[b.level];
+  const base = L + Math.max(0, b.beds - 1) * s.perBed + Math.max(0, b.baths - 1) * s.perBath + (SQ_ADD[b.sqft] || 0);
+  const add = (b.addons || []).reduce((t, id) => t + (ADDONS.find(a => a.id === id) || { price: 0 }).price, 0);
+  const disc = Math.round((base + add) * (s.discounts[b.freq] || 0) / 100);
+  const service = base + add - disc;
+  const fee = Math.round(service * s.feePct / 100);
+  const credit = Math.min(b.credit || 0, service + fee);
+  const promo = Math.min(b.promoOff || 0, service + fee - credit);
+  const total = service + fee - credit - promo;
+  const payout = Math.round(service * (100 - s.commissionPct) / 100);
+  const h = LEVEL_META[b.level].hours + (b.beds - 3) * 0.5 + (b.baths - 2) * 0.5 + (b.addons || []).length * 0.3;
+  const hours = Math.max(1.5, Math.round(h * 2) / 2);
+  return { base, add, disc, service, fee, credit, promo, total, payout, platform: service + fee - payout, hours };
+}
+
+/* ============ seed data (sample) ============ */
+function seed() {
+  const settings = { levels: { light: 79, standard: 109, deep: 189, move: 169 }, perBed: 15, perBath: 20, feePct: 8, commissionPct: 20, discounts: { once: 0, weekly: 15, biweekly: 10, monthly: 5 }, cancelHours: 24, lateCancelFee: 40, zips: ['06107', '06117', '06119', '06110', '06105', '06106', '06112', '06114', '06032', '06002', '06111'], promos: [{ code: 'WELCOME15', off: 15 }], referralCredit: 25, escalationBonus: 15, payoutDay: 'Friday' };
+  const customers = [
+    { id: 'cu1', name: 'Olivia M.', email: 'olivia.m@example.com', phone: '(860) 555-0141', town: 'West Hartford', hood: 'Elmwood', zip: '06107', ref: 'OLIVIA25', referredBy: null, credits: 0, joined: '2026-09-12' },
+    { id: 'cu2', name: 'James K.', email: 'jkim@example.com', phone: '(860) 555-0177', town: 'Farmington', hood: 'Unionville', ref: 'JAMES25', referredBy: null, credits: 0, joined: '2026-10-02' },
+    { id: 'cu3', name: 'Priya S.', email: 'priya.s@example.com', phone: '(860) 555-0112', town: 'Hartford', hood: 'West End', ref: 'PRIYA25', referredBy: null, credits: 0, joined: '2026-10-11' },
+    { id: 'cu4', name: 'Daniel R.', email: 'drivera@example.com', phone: '(860) 555-0190', town: 'Bloomfield', hood: 'Bloomfield Center', ref: 'DANIEL25', referredBy: null, credits: 0, joined: '2026-10-29' },
+    { id: 'cu5', name: 'Emma T.', email: 'emma.t@example.com', phone: '(860) 555-0126', town: 'Newington', hood: 'Newington Center', ref: 'EMMA25', referredBy: 'cu1', referralPaid: false, credits: 0, joined: '2026-10-20' },
+    { id: 'cu6', name: 'Marcus L.', email: 'marcus.l@example.com', phone: '(860) 555-0158', town: 'Hartford', hood: 'Blue Hills', ref: 'MARCUS25', referredBy: null, credits: 0, joined: '2026-10-15' },
+  ];
+  const cleaners = [
+    { id: 'c1', name: 'Maria S.', initials: 'MS', towns: ['West Hartford', 'Hartford', 'Newington'], rating: 4.9, jobs: 182, status: 'active', available: true, langs: 'Português · English', insuranceExp: '2026-11-20', joined: '2026-03-02' },
+    { id: 'c2', name: 'Ana P.', initials: 'AP', towns: ['Bloomfield', 'Hartford', 'West Hartford'], rating: 4.8, jobs: 96, status: 'active', available: true, langs: 'Português · Español', insuranceExp: '2027-04-01', joined: '2026-05-14' },
+    { id: 'c3', name: 'Lucia R.', initials: 'LR', towns: ['Farmington', 'West Hartford'], rating: 4.9, jobs: 140, status: 'active', available: true, langs: 'Español · English', insuranceExp: '2027-02-11', joined: '2026-04-09' },
+    { id: 'c4', name: 'Joana M.', initials: 'JM', towns: ['Newington', 'Hartford'], rating: 4.6, jobs: 58, status: 'active', available: true, langs: 'Português', insuranceExp: '2027-06-30', joined: '2026-07-21' },
+    { id: 'c5', name: 'Carla D.', initials: 'CD', towns: ['Bloomfield', 'Farmington'], rating: 4.7, jobs: 71, status: 'paused', available: false, langs: 'English · Español', insuranceExp: '2027-01-15', joined: '2026-06-03' },
+  ];
+  const applicants = [
+    { id: 'a1', name: 'Beatriz L.', town: 'West Hartford', lang: 'Português', stage: 'checks', updated: '2026-10-28', nudged: false, exp: '4 years' },
+    { id: 'a2', name: 'Rosa M.', town: 'Hartford', lang: 'Español', stage: 'applied', updated: '2026-11-02', nudged: false, exp: '2 years' },
+    { id: 'a3', name: 'Fernanda C.', town: 'Newington', lang: 'Português', stage: 'agreement', updated: '2026-10-30', nudged: false, exp: '7 years' },
+  ];
+  let n = 1026;
+  const mk = (o) => { const b = { id: 'B-' + (n++), addons: [], freq: 'once', sqft: '1,500–2,500', notes: '', entry: 'home', dnr: [], status: 'assigned', cleaner: null, rating: null, review: '', paidOut: false, flags: {}, bonus: 0, credit: 0, promoOff: 0, ...o }; b.price = quote(settings, b); return b; };
+  const bookings = [
+    mk({ cust: 'cu3', town: 'Hartford', hood: 'West End', date: '2026-10-29', time: '9:00 AM', level: 'standard', beds: 2, baths: 1, status: 'cancelled' }),
+    mk({ cust: 'cu1', town: 'West Hartford', hood: 'Elmwood', date: '2026-10-24', time: '10:00 AM', level: 'standard', beds: 3, baths: 2, freq: 'biweekly', status: 'completed', cleaner: 'c1', rating: 5, review: 'Kitchen looks brand new.', paidOut: 'paid', flags: { nextCreated: true, reviewRequested: true } }),
+    mk({ cust: 'cu6', town: 'Hartford', hood: 'Blue Hills', date: '2026-11-02', time: '1:00 PM', level: 'standard', beds: 3, baths: 1, status: 'completed', cleaner: 'c2' }),
+    mk({ cust: 'cu5', town: 'Newington', hood: 'Newington Center', date: '2026-11-01', time: '11:00 AM', level: 'light', beds: 2, baths: 2, status: 'completed', cleaner: 'c4', rating: 2, review: 'Bathrooms were skipped.', flags: { reviewRequested: true } }),
+    mk({ cust: 'cu2', town: 'Farmington', hood: 'Unionville', date: '2026-10-31', time: '9:00 AM', level: 'deep', beds: 4, baths: 3, status: 'completed', cleaner: 'c3', rating: 5, review: 'Thorough and on time.', flags: { reviewRequested: true } }),
+    mk({ cust: 'cu1', town: 'West Hartford', hood: 'Elmwood', date: '2026-11-07', time: '10:00 AM', level: 'standard', beds: 3, baths: 2, freq: 'biweekly', status: 'assigned', cleaner: 'c1', addons: ['fridge'], notes: 'Fragrance-free products, please. Dog stays in the backyard.', dnr: ['Home office'] }),
+    mk({ cust: 'cu2', town: 'Farmington', hood: 'Unionville', date: '2026-11-04', time: '9:00 AM', level: 'deep', beds: 4, baths: 3, status: 'assigned', cleaner: 'c3' }),
+    mk({ cust: 'cu3', town: 'Hartford', hood: 'West End', date: '2026-11-04', time: '2:00 PM', level: 'light', beds: 2, baths: 1, status: 'unassigned' }),
+    mk({ cust: 'cu4', town: 'Bloomfield', hood: 'Bloomfield Center', date: '2026-11-05', time: '8:00 AM', level: 'move', beds: 3, baths: 2, status: 'unassigned', sqft: '750–1,500' }),
+    mk({ cust: 'cu5', town: 'Newington', hood: 'Newington Center', date: '2026-11-06', time: '11:00 AM', level: 'standard', beds: 2, baths: 2, status: 'unassigned', sqft: '750–1,500' }),
+  ];
+  const automations = [
+    { id: 'dispatch', name: 'Auto-dispatch', trigger: 'A booking is confirmed', action: 'Offer it to the best-matched available cleaner (area, rating, workload, no time conflict)', channel: 'In-app + SMS', on: true, runs: 0 },
+    { id: 'escalate', name: 'Unfilled job rescue', trigger: 'No cleaner matches a booking', action: 'Add a bonus to the payout, re-broadcast to nearby cleaners and alert the ops team', channel: 'Push + ops alert', on: true, runs: 0 },
+    { id: 'reminders', name: '24-hour reminders', trigger: 'A cleaning is tomorrow', action: 'Remind the customer and the cleaner, with time, address and instructions', channel: 'SMS + email', on: true, runs: 0 },
+    { id: 'reviews', name: 'Review requests', trigger: 'A cleaning is marked complete', action: 'Ask the customer to rate and tip; ask the cleaner to rate the booking', channel: 'Email + push', on: true, runs: 0 },
+    { id: 'lowrating', name: 'Re-clean guarantee', trigger: 'A rating of 3 stars or lower', action: 'Open a support ticket, offer a free re-clean within 24 hours and flag the cleaner’s profile', channel: 'Ticket + email', on: true, runs: 0 },
+    { id: 'recurring', name: 'Recurring plans', trigger: 'A plan’s visit is booked or completed', action: 'Create the next visit with the same cleaner, at the plan’s price', channel: 'Calendar', on: true, runs: 0 },
+    { id: 'payouts', name: 'Weekly payouts', trigger: 'Every Friday', action: 'Batch all completed, unpaid jobs into payouts per cleaner (tips included at 100%)', channel: 'Stripe', on: true, runs: 0 },
+    { id: 'nudge', name: 'Applicant follow-ups', trigger: 'An applicant is stuck on a step for 3+ days', action: 'Send a reminder in the applicant’s language with a link back to that step', channel: 'SMS + email', on: true, runs: 0 },
+    { id: 'docs', name: 'Document renewals', trigger: 'A cleaner’s insurance certificate expires within 30 days', action: 'Ask the cleaner to upload a new certificate; pause new jobs if it lapses', channel: 'Email + in-app', on: true, runs: 0 },
+    { id: 'abandoned', name: 'Unfinished bookings', trigger: 'Someone starts a booking and leaves', action: 'Email their saved quote 2 hours later with a one-click link to finish', channel: 'Email', on: true, runs: 0 },
+    { id: 'referral', name: 'Referral credits', trigger: 'A referred customer completes a first clean', action: 'Add credit to both accounts and send a thank-you', channel: 'Account credit + email', on: true, runs: 0 },
+    { id: 'waitlist', name: 'New area launch', trigger: 'A ZIP code is added to the service area', action: 'Tell everyone on that ZIP’s waitlist they can book now', channel: 'Email', on: true, runs: 0 },
+  ];
+  return {
+    settings, customers, cleaners, applicants, bookings, automations,
+    tickets: [{ id: 'T-301', type: 'Question', booking: 'B-1030', cust: 'cu2', subject: 'Can I get an itemized receipt for my records?', status: 'open', created: '2026-11-02' }],
+    payouts: [{ id: 'P-77', cleaner: 'c1', amount: 102, jobs: 1, date: '2026-10-30', status: 'paid' }],
+    drafts: [{ id: 'q1', email: 'k.ross@example.com', town: 'West Hartford', level: 'deep', total: 262, followed: false }],
+    waitlist: [{ email: 'h.chen@example.com', zip: '06001', notified: false }, { email: 'sam.p@example.com', zip: '06033', notified: false }],
+    declined: {}, messages: [{ cust: 'cu1', from: 'c1', text: 'Hi Olivia! See you Saturday at 10. I’ll bring fragrance-free products.', t: 'Nov 2, 6:14 PM' }],
+    log: [], seq: 1036, tick: 0, me: 'cu1',
+  };
+}
+
+/* ============ automation engine ============ */
+function runAutomations(db, only) {
+  const logs = [];
+  const on = (id) => (!only || only.includes(id)) && db.automations.find(a => a.id === id).on;
+  const bump = (id) => { db.automations.find(a => a.id === id).runs++; };
+  const say = (rule, text) => { logs.push({ rule, text }); bump(rule); };
+  const cl = (id) => db.cleaners.find(c => c.id === id);
+  const cu = (id) => db.customers.find(c => c.id === id);
+  const busy = (cid, b) => db.bookings.some(x => x.cleaner === cid && x.date === b.date && x.time === b.time && x.id !== b.id && x.status !== 'cancelled');
+  const load = (cid, date) => db.bookings.filter(x => x.cleaner === cid && x.date === date && x.status !== 'cancelled').length;
+
+  if (on('dispatch') || on('escalate')) {
+    db.bookings.filter(b => b.status === 'unassigned' && daysFrom(TODAY, b.date) >= 0).forEach(b => {
+      const pool = db.cleaners.filter(c => c.status === 'active' && c.available && c.towns.includes(b.town) && !(db.declined[c.id] || []).includes(b.id) && !busy(c.id, b));
+      if (on('dispatch') && pool.length) {
+        const best = pool.map(c => ({ c, score: c.rating * 20 - load(c.id, b.date) * 6 })).sort((x, y) => y.score - x.score)[0].c;
+        b.cleaner = best.id; b.status = 'assigned';
+        say('dispatch', `${b.id} in ${b.hood} assigned to ${best.name} (rating ${best.rating}, ${load(best.id, b.date) - 1} other jobs that day).`);
+      } else if (on('escalate') && !b.flags.escalated) {
+        b.flags.escalated = true; b.bonus = db.settings.escalationBonus; b.price.payout += b.bonus;
+        say('escalate', `No available cleaner covers ${b.town} for ${b.id}. Added a $${b.bonus} bonus, re-broadcast the job and alerted ops.`);
+      }
+    });
+  }
+  if (on('reminders')) db.bookings.filter(b => b.status === 'assigned' && daysFrom(TODAY, b.date) === 1 && !b.flags.reminded).forEach(b => {
+    b.flags.reminded = true; say('reminders', `Reminder sent to ${cu(b.cust).name} and ${cl(b.cleaner).name} for ${b.id} tomorrow at ${b.time}.`);
+  });
+  if (on('reviews')) db.bookings.filter(b => b.status === 'completed' && b.rating == null && !b.flags.reviewRequested).forEach(b => {
+    b.flags.reviewRequested = true; say('reviews', `Asked ${cu(b.cust).name} to rate and tip ${b.id}; asked ${cl(b.cleaner).name} to rate the booking.`);
+  });
+  if (on('lowrating')) db.bookings.filter(b => b.status === 'completed' && b.rating != null && b.rating <= 3 && !b.flags.ticket).forEach(b => {
+    b.flags.ticket = true;
+    const id = 'T-' + (302 + db.tickets.length);
+    db.tickets.unshift({ id, type: 'Re-clean', booking: b.id, cust: b.cust, cleaner: b.cleaner, subject: `${b.rating}-star rating: “${b.review || 'No comment'}”`, status: 'open', created: TODAY });
+    say('lowrating', `${b.rating}-star rating on ${b.id}. Opened ${id}, offered ${cu(b.cust).name} a free re-clean and flagged ${cl(b.cleaner).name}’s profile for review.`);
+  });
+  if (on('recurring')) db.bookings.filter(b => b.freq !== 'once' && ['assigned', 'completed'].includes(b.status) && !b.flags.nextCreated).forEach(b => {
+    b.flags.nextCreated = true;
+    const nb = { ...JSON.parse(JSON.stringify(b)), id: 'B-' + (++db.seq), date: addDays(b.date, FREQ_DAYS[b.freq]), status: b.cleaner ? 'assigned' : 'unassigned', rating: null, review: '', paidOut: false, flags: {}, bonus: 0, credit: 0, promoOff: 0 };
+    nb.price = quote(db.settings, nb);
+    db.bookings.push(nb);
+    say('recurring', `Created ${nb.id} for ${cu(b.cust).name} on ${fmtDay(nb.date)}${b.cleaner ? ` with ${cl(b.cleaner).name}` : ''} (${FREQ[b.freq].toLowerCase()}).`);
+  });
+  if (on('payouts')) {
+    const due = db.bookings.filter(b => b.status === 'completed' && !b.paidOut && b.cleaner);
+    const by = {};
+    due.forEach(b => { (by[b.cleaner] = by[b.cleaner] || []).push(b); b.paidOut = 'scheduled'; });
+    Object.entries(by).forEach(([cid, list]) => {
+      const amount = list.reduce((t, b) => t + b.price.payout + (b.tip || 0), 0);
+      db.payouts.unshift({ id: 'P-' + (78 + db.payouts.length), cleaner: cid, amount, jobs: list.length, date: '2026-11-06', status: 'scheduled' });
+      say('payouts', `Scheduled ${money(amount)} to ${cl(cid).name} for ${list.length} completed ${list.length === 1 ? 'job' : 'jobs'} (Friday, Nov 6).`);
+    });
+  }
+  if (on('nudge')) db.applicants.filter(a => a.stage !== 'ready' && daysFrom(a.updated, TODAY) >= 3 && !a.nudged).forEach(a => {
+    a.nudged = true; say('nudge', `${a.name} has been on “${STAGES.find(s => s.id === a.stage).name}” for ${daysFrom(a.updated, TODAY)} days. Reminder sent in ${a.lang}.`);
+  });
+  if (on('docs')) db.cleaners.filter(c => daysFrom(TODAY, c.insuranceExp) <= 30 && !c.docReminded).forEach(c => {
+    c.docReminded = true; say('docs', `${c.name}’s insurance certificate expires ${fmtShort(c.insuranceExp)}. Upload request sent.`);
+  });
+  if (on('abandoned')) db.drafts.filter(d => !d.followed).forEach(d => {
+    d.followed = true; say('abandoned', `Emailed the saved ${LEVEL_META[d.level].name} quote (${money(d.total)}) to ${d.email}.`);
+  });
+  if (on('referral')) db.customers.filter(c => c.referredBy && !c.referralPaid && db.bookings.some(b => b.cust === c.id && b.status === 'completed')).forEach(c => {
+    c.referralPaid = true; c.credits += db.settings.referralCredit; const r = cu(c.referredBy); r.credits += db.settings.referralCredit;
+    say('referral', `${c.name} finished a first clean. Added $${db.settings.referralCredit} credit to ${c.name} and to ${r.name}, who referred them.`);
+  });
+  if (on('waitlist')) db.waitlist.filter(w => !w.notified && db.settings.zips.includes(w.zip)).forEach(w => {
+    w.notified = true; say('waitlist', `${ZIPS[w.zip]} (${w.zip}) is now open. Told ${w.email} they can book.`);
+  });
+  const stamp = new Date(2026, 10, 3, 13, 45 + db.tick++).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+  logs.forEach(l => db.log.unshift({ ...l, t: stamp, id: Math.random().toString(36).slice(2) }));
+  return logs;
+}
+
+/* ============ store ============ */
+const Store = createContext(null);
+const useStore = () => useContext(Store);
+const STAGES = [{ id: 'applied', name: 'Application' }, { id: 'checks', name: 'Identity and background check' }, { id: 'agreement', name: 'Agreement and payout setup' }, { id: 'training', name: 'Training' }, { id: 'ready', name: 'Ready' }];
+
+/* ============ primitives ============ */
+function Logo({ size = 34 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 40 40" aria-hidden="true">
+      <rect width="40" height="40" rx="12" fill="#DDF2FC" />
+      <path d="M10.5 19.5 19 12.4l8.5 7.1V28.5a1.2 1.2 0 0 1-1.2 1.2h-4.6v-5.6h-5.4v5.6h-4.6a1.2 1.2 0 0 1-1.2-1.2z" fill="none" stroke="#172B3A" strokeWidth="2" strokeLinejoin="round" />
+      <path d="M29.5 6.5l1.05 2.7 2.7 1.05-2.7 1.05-1.05 2.7-1.05-2.7-2.7-1.05 2.7-1.05z" fill="#276C90" />
+      <path d="M33 15.5l.5 1.2 1.2.5-1.2.5-.5 1.2-.5-1.2-1.2-.5 1.2-.5z" fill="#A8D8F0" />
+    </svg>
+  );
+}
+const Status = ({ s }) => <span className={'pill ' + STATUS[s].cls}>{STATUS[s].label}</span>;
+const Avatar = ({ t, size = 36, tone }) => <span className={'rounded-full grid place-items-center font-semibold shrink-0 ' + (tone === 'mint' ? 'bg-mint text-ink' : 'bg-soft text-deep')} style={{ width: size, height: size, fontSize: size * 0.36 }}>{t}</span>;
+function Toggle({ on, onChange, label }) {
+  return (
+    <button role="switch" aria-checked={on} aria-label={label} onClick={() => onChange(!on)} className={'relative w-[42px] h-[25px] rounded-full transition-colors shrink-0 ' + (on ? 'bg-deep' : 'bg-[#CFDCE4]')}>
+      <span className={'absolute top-[3px] left-[3px] w-[19px] h-[19px] rounded-full bg-white shadow transition-transform ' + (on ? 'translate-x-[17px]' : '')} />
+    </button>
+  );
+}
+function Stepper({ label, value, set, min = 0, max = 8, id }) {
+  return (
+    <div className="flex items-center justify-between py-2.5">
+      <span className="text-[14px] font-medium" id={id}>{label}</span>
+      <div className="flex items-center gap-3" aria-labelledby={id}>
+        <button aria-label={'Fewer ' + label.toLowerCase()} disabled={value <= min} onClick={() => set(value - 1)} className="w-9 h-9 rounded-full border border-line grid place-items-center disabled:opacity-30 hover:bg-mist"><Ic n="Minus" s={15} /></button>
+        <span className="w-5 text-center font-semibold tnum">{value}</span>
+        <button aria-label={'More ' + label.toLowerCase()} disabled={value >= max} onClick={() => set(value + 1)} className="w-9 h-9 rounded-full border border-sky bg-soft grid place-items-center disabled:opacity-30 hover:bg-sky"><Ic n="Plus" s={15} /></button>
+      </div>
+    </div>
+  );
+}
+function Chip({ on, onClick, children, icon }) {
+  return <button onClick={onClick} aria-pressed={on} className={'h-9 px-3 rounded-full text-[13px] font-medium border inline-flex items-center gap-1.5 transition whitespace-nowrap ' + (on ? 'bg-soft border-sky text-ink' : 'bg-white border-line text-ink/80 hover:border-sky')}>{icon && <Ic n={icon} s={14} />}{children}</button>;
+}
+function Stars({ value, onChange, size = 22 }) {
+  return (
+    <div className="flex gap-1">
+      {[1, 2, 3, 4, 5].map(k => (
+        <button key={k} type="button" aria-label={`${k} star${k > 1 ? 's' : ''}`} onClick={() => onChange && onChange(k)} disabled={!onChange}>
+          <svg width={size} height={size} viewBox="0 0 24 24"><path d="M12 2.8l2.8 5.8 6.3.9-4.6 4.4 1.1 6.3L12 17.2l-5.6 3 1.1-6.3L2.9 9.5l6.3-.9z" fill={k <= value ? '#A8D8F0' : '#fff'} stroke={k <= value ? '#276C90' : '#C9D7DF'} strokeWidth="1.4" strokeLinejoin="round" /></svg>
+        </button>
+      ))}
+    </div>
+  );
+}
+const Kpi = ({ label, value, sub, tone }) => (
+  <div className={'card p-4 min-w-0 ' + (tone === 'attn' ? 'border-warn bg-[#FFFBF2]' : '')}>
+    <div className="text-[12.5px] text-mute">{label}</div>
+    <div className="text-[26px] font-semibold tnum tracking-tight mt-1">{value}</div>
+    {sub && <div className="text-[12px] text-mute mt-0.5">{sub}</div>}
+  </div>
+);
+const Sample = () => <span className="pill bg-mist border border-line text-mute">Sample data</span>;
+const RULE_ICON = { dispatch: 'Navigation', escalate: 'Siren', reminders: 'BellRing', reviews: 'Star', lowrating: 'RotateCcw', recurring: 'Repeat', payouts: 'Wallet', nudge: 'UserPlus', docs: 'FileCheck', abandoned: 'ShoppingCart', referral: 'Gift', waitlist: 'MapPin' };
+
+/* ============ booking tracker (customer) ============ */
+function Tracker({ b }) {
+  const { db } = useStore();
+  const c = db.cleaners.find(x => x.id === b.cleaner);
+  const idx = b.status === 'cancelled' ? -1 : FLOW.indexOf(b.status);
+  const labels = ['Booked', 'Cleaner confirmed', 'On the way', 'Cleaning', 'Done'];
+  return (
+    <div className="card p-5 fade">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="min-w-0">
+          <div className="text-[12.5px] text-mute">{b.id} · {fmtDay(b.date)} · {b.time}</div>
+          <div className="text-[18px] font-semibold mt-0.5">{LEVEL_META[b.level].name} · {b.beds} bd · {b.baths} ba</div>
+          <div className="text-[13px] text-mute">{b.hood}, {b.town}{b.freq !== 'once' ? ` · ${FREQ[b.freq]}` : ''}</div>
+        </div>
+        <Status s={b.status} />
+      </div>
+      {idx >= 0 && (
+        <div className="mt-4 grid grid-cols-5 gap-1.5">
+          {labels.map((l, k) => (
+            <div key={l} className="min-w-0">
+              <div className={'h-1.5 rounded-full ' + (k <= idx ? 'bg-deep' : 'bg-line') + (k === idx && b.status === 'unassigned' ? ' pulse' : '')} />
+              <div className={'text-[11px] mt-1.5 leading-tight ' + (k <= idx ? 'text-ink font-medium' : 'text-mute')}>{l}</div>
+            </div>
+          ))}
+        </div>
+      )}
+      <div className="mt-4 flex items-center gap-3 rounded-xl bg-mist p-3">
+        {c ? <><Avatar t={c.initials} /><div className="min-w-0 flex-1"><div className="text-[14px] font-semibold">{c.name}</div><div className="text-[12px] text-mute">★ {c.rating} · {c.jobs} cleanings · ID and background checked</div></div></>
+          : <><span className="w-9 h-9 rounded-full bg-white grid place-items-center text-deep"><Ic n="Search" s={16} /></span><div className="text-[13.5px] text-mute">{b.status === 'cancelled' ? 'This booking was cancelled.' : 'Matching you with a verified cleaner nearby…'}</div></>}
+      </div>
+    </div>
+  );
+}
+
+/* ============ CUSTOMER APP (DoorDash-style) ============ */
+const LS = {
+  get(k) { try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { } },
+  del(k) { try { localStorage.removeItem(k); } catch (e) { } },
+};
+function addAccount(d, acc) {
+  const town = ZIPS[acc.zip] || 'West Hartford';
+  const ex = d.customers.find(c => c.id === 'cu-me');
+  if (ex) Object.assign(ex, { name: acc.name, email: acc.email, zip: acc.zip, town, hood: (HOODS[town] || ['—'])[0], provider: acc.provider });
+  else {
+    const first = acc.name.split(' ')[0] || 'NEW';
+    d.customers.push({ id: 'cu-me', name: acc.name, email: acc.email, phone: acc.phone || '', town, hood: (HOODS[town] || ['—'])[0], zip: acc.zip, ref: first.toUpperCase().replace(/[^A-Z]/g, '').slice(0, 8) + '25', referredBy: null, credits: 0, joined: TODAY, provider: acc.provider });
+    if (!d.settings.zips.includes(acc.zip) && !d.waitlist.some(w => w.email === acc.email)) d.waitlist.push({ email: acc.email, zip: acc.zip, notified: false });
+  }
+  d.me = 'cu-me';
+}
+const greet = () => 'Good afternoon';
+
+function GoogleMark() { return <span className="w-5 h-5 rounded-full border-2 border-ink grid place-items-center text-[11px] font-bold leading-none">G</span>; }
+function ProviderButtons({ onPick, labels = ['Continue with Apple', 'Continue with Google', 'Continue with email'] }) {
+  return (
+    <div className="grid gap-2.5">
+      <button onClick={() => onPick('Apple')} className="btn h-[52px] bg-ink text-white hover:bg-[#22394A] text-[15px]"><Ic n="Apple" s={19} />{labels[0]}</button>
+      <button onClick={() => onPick('Google')} className="btn btn-g h-[52px] text-[15px]"><GoogleMark />{labels[1]}</button>
+      <button onClick={() => onPick('Email')} className="btn btn-g h-[52px] text-[15px]"><Ic n="Mail" s={18} />{labels[2]}</button>
+    </div>
+  );
+}
+
+const INTRO = [
+  { icon: 'Timer', title: 'Book a clean in 60 seconds', text: 'Tell us your home size, pick a time and see the full price before you book. No calls, no waiting for quotes.', demo: ['3 bedrooms · 2 bathrooms', 'Standard Clean', 'Total $174'] },
+  { icon: 'ShieldCheck', title: 'Only vetted pros', text: 'Every cleaner passes an identity check and a background check, completes our training and keeps a high rating.', demo: ['Maria S. · ★ 4.9', '182 cleanings', 'ID and background checked'] },
+  { icon: 'MapPin', title: 'Track it live', text: 'See when your cleaner is confirmed, on the way, cleaning and done. Message them right from the app.', demo: ['Confirmed', 'On the way · 9:52 AM', 'Cleaning'] },
+  { icon: 'BadgeCheck', title: 'Pay after it’s done', text: 'Your card is charged only after the clean. If something was missed, we come back for free within 24 hours.', demo: ['Charged after the clean', 'Free re-clean guarantee', '100% of tips to your cleaner'] },
+];
+function Intro({ onDone, overlay }) {
+  const [i, setI] = useState(0);
+  const s = INTRO[i];
+  const last = i === INTRO.length - 1;
+  return (
+    <div className={(overlay ? 'fixed inset-0 z-[80] ' : 'min-h-[calc(100vh-61px)] ') + 'bg-mist gutter flex items-center justify-center py-10'} role="dialog" aria-label="Welcome to Neatly">
+      <div className="w-full max-w-[440px]">
+        <div className="flex items-center justify-between"><div className="flex items-center gap-2"><Logo size={30} /><span className="font-semibold text-[17px]">Neatly</span></div><button onClick={onDone} className="text-[14px] font-semibold text-mute hover:text-ink h-10 px-2">Skip</button></div>
+        <div className="card lift p-7 mt-6 fade" key={i}>
+          <span className="w-14 h-14 rounded-2xl bg-soft grid place-items-center text-deep"><Ic n={s.icon} s={26} /></span>
+          <h1 className="text-[26px] font-semibold leading-tight mt-5">{s.title}</h1>
+          <p className="text-[15px] text-mute leading-relaxed mt-2">{s.text}</p>
+          <div className="mt-5 rounded-2xl bg-mist border border-line p-4 grid gap-2">
+            {s.demo.map((d, k) => <div key={d} className="flex items-center gap-2.5 text-[13.5px]"><span className={'w-5 h-5 rounded-full grid place-items-center ' + (k < 2 || i !== 2 ? 'bg-deep text-white' : 'bg-white border border-line')}>{(k < 2 || i !== 2) && <Ic n="Check" s={12} w={3} />}</span>{d}</div>)}
+          </div>
+        </div>
+        <div className="flex items-center justify-between mt-6">
+          <div className="flex gap-1.5" aria-label={`Step ${i + 1} of ${INTRO.length}`}>{INTRO.map((_, k) => <button key={k} aria-label={'Go to step ' + (k + 1)} onClick={() => setI(k)} className={'h-2 rounded-full transition-all ' + (k === i ? 'w-7 bg-deep' : 'w-2 bg-[#C9D7DF]')} />)}</div>
+          <div className="flex gap-2">
+            {i > 0 && <button className="btn btn-g" onClick={() => setI(i - 1)}>Back</button>}
+            <button className="btn btn-p" onClick={() => (last ? onDone() : setI(i + 1))}>{last ? (overlay ? 'Done' : 'Get started') : 'Next'}<Ic n="ArrowRight" s={16} /></button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Auth({ onSignIn }) {
+  const [mode, setMode] = useState('start');
+  const [provider, setProvider] = useState(null);
+  const [f, setF] = useState({ name: '', email: '', password: '', phone: '', zip: '', terms: false, texts: true });
+  const [show, setShow] = useState(false);
+  const [err, setErr] = useState({});
+  const saved = LS.get('neatly.saved');
+  const pick = (p) => {
+    if (saved && saved.provider === p && p !== 'Email') { onSignIn(saved); return; }
+    setProvider(p); setErr({});
+    if (p === 'Email') setMode('email');
+    else { setMode('connecting'); setTimeout(() => { setF(s => ({ ...s, email: p === 'Apple' ? 'hidden-relay@privaterelay.example' : '' })); setMode('finish'); }, 1100); }
+  };
+  const submit = (e) => {
+    e.preventDefault();
+    const er = {};
+    if (f.name.trim().split(' ').length < 2) er.name = 'Enter your first and last name.';
+    if (!/^\S+@\S+\.\S+$/.test(f.email)) er.email = 'Enter a valid email address.';
+    if (mode === 'email' && f.password.length < 8) er.password = 'Use at least 8 characters.';
+    if (!/^\d{5}$/.test(f.zip)) er.zip = 'Enter your 5-digit ZIP code.';
+    if (!f.terms) er.terms = 'Please accept the Terms and Privacy Policy.';
+    setErr(er);
+    if (Object.keys(er).length) return;
+    onSignIn({ name: f.name.trim(), email: f.email.trim(), phone: f.phone, zip: f.zip, provider, texts: f.texts, created: TODAY, isNew: true });
+  };
+  const login = (e) => {
+    e.preventDefault();
+    if (saved && saved.email.toLowerCase() === f.email.trim().toLowerCase()) onSignIn(saved);
+    else setErr({ login: 'We couldn’t find an account with that email. Create one instead.' });
+  };
+  const Err = ({ k }) => err[k] ? <div className="text-[12.5px] text-badink mt-1.5">{err[k]}</div> : null;
+  return (
+    <div className="min-h-[calc(100vh-61px)] bg-mist gutter flex items-center justify-center py-10">
+      <div className="w-full max-w-[440px]">
+        <div className="flex items-center gap-2 justify-center"><Logo size={36} /><span className="font-semibold text-[20px]">Neatly</span></div>
+        <div className="card lift p-6 sm:p-7 mt-6 fade" key={mode}>
+          {mode === 'start' && <>
+            <h1 className="text-[24px] font-semibold text-center">Create your account</h1>
+            <p className="text-[14px] text-mute text-center mt-1.5">Book cleanings, track your cleaner and save your home details.</p>
+            <div className="mt-6"><ProviderButtons onPick={pick} /></div>
+            <p className="text-[13.5px] text-center mt-5">Already have an account? <button className="font-semibold text-deep" onClick={() => { setMode('login'); setErr({}); }}>Log in</button></p>
+          </>}
+          {mode === 'connecting' && <div className="py-10 text-center">
+            <span className="w-12 h-12 rounded-full border-4 border-soft border-t-deep inline-block animate-spin" />
+            <div className="text-[15px] font-semibold mt-4">Connecting to {provider}…</div>
+            <div className="text-[13px] text-mute mt-1">{provider} confirms who you are. Neatly never sees your {provider} password.</div>
+          </div>}
+          {(mode === 'email' || mode === 'finish') && <form onSubmit={submit} noValidate>
+            <button type="button" onClick={() => setMode('start')} className="text-[13px] text-mute flex items-center gap-1 -mt-1"><Ic n="ArrowLeft" s={14} />Other options</button>
+            <h1 className="text-[22px] font-semibold mt-3">{mode === 'finish' ? 'Finish your account' : 'Sign up with email'}</h1>
+            {mode === 'finish' && <div className="mt-2 pill bg-mint text-ink">Connected with {provider}</div>}
+            <div className="grid gap-3.5 mt-5">
+              <div><label htmlFor="su-name" className="lbl">Full name</label><input id="su-name" autoComplete="name" className="field mt-1.5" value={f.name} onChange={e => setF({ ...f, name: e.target.value })} /><Err k="name" /></div>
+              <div><label htmlFor="su-email" className="lbl">Email</label><input id="su-email" type="email" autoComplete="email" className="field mt-1.5" value={f.email} onChange={e => setF({ ...f, email: e.target.value })} />{provider === 'Apple' && mode === 'finish' && <div className="text-[12px] text-mute mt-1">You chose to hide your email. Apple forwards our messages to you.</div>}<Err k="email" /></div>
+              {mode === 'email' && <div><label htmlFor="su-pass" className="lbl">Password</label><div className="relative mt-1.5"><input id="su-pass" type={show ? 'text' : 'password'} autoComplete="new-password" className="field pr-16" value={f.password} onChange={e => setF({ ...f, password: e.target.value })} /><button type="button" onClick={() => setShow(!show)} className="absolute right-2 top-1/2 -translate-y-1/2 text-[12.5px] font-semibold text-deep px-2 h-8">{show ? 'Hide' : 'Show'}</button></div><Err k="password" /></div>}
+              <div className="grid grid-cols-[1fr_120px] gap-3">
+                <div><label htmlFor="su-phone" className="lbl">Mobile (optional)</label><input id="su-phone" type="tel" autoComplete="tel" placeholder="(860) 555-0100" className="field mt-1.5" value={f.phone} onChange={e => setF({ ...f, phone: e.target.value })} /></div>
+                <div><label htmlFor="su-zip" className="lbl">ZIP code</label><input id="su-zip" inputMode="numeric" maxLength={5} autoComplete="postal-code" className="field mt-1.5 tnum" value={f.zip} onChange={e => setF({ ...f, zip: e.target.value.replace(/\D/g, '') })} /></div>
+              </div>
+              <Err k="zip" />
+              <label className="flex gap-2.5 items-start text-[13px]"><input type="checkbox" className="mt-0.5 w-4 h-4 accent-[#276C90]" checked={f.texts} onChange={e => setF({ ...f, texts: e.target.checked })} /><span>Text me booking updates. Message and data rates may apply; reply STOP to opt out.</span></label>
+              <label className="flex gap-2.5 items-start text-[13px]"><input type="checkbox" className="mt-0.5 w-4 h-4 accent-[#276C90]" checked={f.terms} onChange={e => setF({ ...f, terms: e.target.checked })} /><span>I agree to the Terms of Service and Privacy Policy.</span></label>
+              <Err k="terms" />
+              <button className="btn btn-p h-[50px] text-[15px] mt-1">Create account</button>
+            </div>
+          </form>}
+          {mode === 'login' && <form onSubmit={login}>
+            <h1 className="text-[22px] font-semibold">Welcome back</h1>
+            <div className="mt-5"><ProviderButtons onPick={pick} labels={['Log in with Apple', 'Log in with Google', 'Log in with email']} /></div>
+            <div className="flex items-center gap-3 my-5 text-[12px] text-mute"><span className="flex-1 h-px bg-line" />or<span className="flex-1 h-px bg-line" /></div>
+            <label htmlFor="li-email" className="lbl">Email</label><input id="li-email" type="email" autoComplete="email" className="field mt-1.5" value={f.email} onChange={e => setF({ ...f, email: e.target.value })} />
+            <label htmlFor="li-pass" className="lbl mt-3 block">Password</label><input id="li-pass" type="password" autoComplete="current-password" className="field mt-1.5" />
+            {err.login && <div className="text-[12.5px] text-badink mt-2">{err.login}</div>}
+            <button className="btn btn-p w-full h-[50px] mt-4">Log in</button>
+            <p className="text-[13.5px] text-center mt-4">New to Neatly? <button type="button" className="font-semibold text-deep" onClick={() => { setMode('start'); setErr({}); }}>Create an account</button></p>
+          </form>}
+        </div>
+        <p className="text-[12px] text-mute text-center mt-4 px-4">Prototype: sign-in is simulated, nothing is sent to Apple or Google, and no password is stored.</p>
+      </div>
+    </div>
+  );
+}
+
+const TOUR = [
+  { id: 'address', title: 'This is where we’ll clean', text: 'Tap your address to change it or add another home.' },
+  { id: 'search', title: 'Search for anything', text: 'Type “oven”, “move out” or “bathroom” to jump straight to it.' },
+  { id: 'tiles', title: 'Start a booking here', text: 'Pick a type of clean. You’ll see the full price before you pay.' },
+  { id: 'nav', title: 'Everything else lives here', text: 'Track your bookings, message your cleaner and manage your account.' },
+];
+function Tour({ onDone }) {
+  const [i, setI] = useState(0);
+  const [rect, setRect] = useState(null);
+  useEffect(() => {
+    const find = () => {
+      const el = [...document.querySelectorAll(`[data-tour="${TOUR[i].id}"]`)].find(e => e.offsetParent !== null);
+      if (!el) { setRect(null); return; }
+      const r = el.getBoundingClientRect();
+      if (r.top < 70 || r.bottom > window.innerHeight - 20) { el.scrollIntoView({ block: 'center' }); }
+      const r2 = el.getBoundingClientRect();
+      setRect({ top: r2.top - 6, left: r2.left - 6, width: r2.width + 12, height: r2.height + 12 });
+    };
+    find(); const t = setTimeout(find, 120);
+    window.addEventListener('resize', find); window.addEventListener('scroll', find, true);
+    return () => { clearTimeout(t); window.removeEventListener('resize', find); window.removeEventListener('scroll', find, true); };
+  }, [i]);
+  const s = TOUR[i];
+  const below = rect && rect.top + rect.height + 210 < window.innerHeight;
+  const cardStyle = rect ? (below ? { top: rect.top + rect.height + 12 } : { top: Math.max(12, rect.top - 200) }) : { top: '40%' };
+  return (
+    <div className="fixed inset-0 z-[75]" role="dialog" aria-label="Quick tour">
+      {rect ? <div className="absolute rounded-2xl pointer-events-none transition-all duration-300" style={{ ...rect, boxShadow: '0 0 0 9999px rgba(23,43,58,.55)', border: '2px solid #A8D8F0' }} /> : <div className="absolute inset-0 bg-ink/55" />}
+      <div className="absolute left-1/2 -translate-x-1/2 w-[min(360px,calc(100vw-32px))] card lift p-5 fade" key={i} style={cardStyle}>
+        <div className="text-[12px] font-semibold text-deep">Quick tour · {i + 1} of {TOUR.length}</div>
+        <div className="text-[17px] font-semibold mt-1">{s.title}</div>
+        <p className="text-[14px] text-mute mt-1">{s.text}</p>
+        <div className="flex justify-between items-center mt-4">
+          <button className="text-[13.5px] font-semibold text-mute h-9" onClick={onDone}>Skip tour</button>
+          <button className="btn btn-p btn-s" onClick={() => (i === TOUR.length - 1 ? onDone() : setI(i + 1))}>{i === TOUR.length - 1 ? 'Start booking' : 'Next'}</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+const CNAV = [['home', 'Home', 'Home'], ['book', 'Book', 'PlusCircle'], ['bookings', 'Bookings', 'CalendarDays'], ['account', 'Account', 'User']];
+function CustomerApp({ goPortal, account, signIn, signOut }) {
+  const [intro, setIntro] = useState(() => !LS.get('neatly.seenIntro'));
+  if (!account) return intro ? <Intro onDone={() => { LS.set('neatly.seenIntro', 1); setIntro(false); }} /> : <Auth onSignIn={signIn} />;
+  return <CustomerShell goPortal={goPortal} account={account} signOut={signOut} />;
+}
+function CustomerShell({ goPortal, account, signOut }) {
+  const { db } = useStore();
+  const me = db.customers.find(c => c.id === db.me);
+  const [view, setView] = useState('home');
+  const [preset, setPreset] = useState(null);
+  const [tour, setTour] = useState(() => !LS.get('neatly.toured'));
+  const [replay, setReplay] = useState(false);
+  const [addr, setAddr] = useState(false);
+  const go = (v) => { setView(v); window.scrollTo(0, 0); };
+  const book = (p) => { setPreset(p || null); go('book'); };
+  const upcomingCount = db.bookings.filter(b => b.cust === db.me && !['completed', 'cancelled'].includes(b.status)).length;
+  if (!me) return null;
+  return (
+    <div className="bg-mist min-h-[calc(100vh-61px)]">
+      <div className="lg:grid lg:grid-cols-[232px_minmax(0,1fr)]">
+        <aside className="hidden lg:block border-r border-line bg-white">
+          <div className="sticky top-[calc(61px+env(safe-area-inset-top,0px))] p-4 grid gap-1" data-tour="nav">
+            {CNAV.map(([k, l, i]) => <button key={k} onClick={() => (k === 'book' ? book() : go(k))} aria-current={view === k ? 'page' : undefined} className={'h-12 px-4 rounded-xl flex items-center gap-3 text-[15px] font-semibold ' + (view === k ? 'bg-soft text-ink' : 'text-ink/75 hover:bg-mist')}><Ic n={i} s={20} />{l}{k === 'bookings' && upcomingCount > 0 && <span className="ml-auto pill bg-deep text-white h-5 px-2 text-[11px]">{upcomingCount}</span>}</button>)}
+            <div className="border-t border-line my-3" />
+            <button onClick={goPortal} className="h-11 px-4 rounded-xl flex items-center gap-3 text-[14px] text-mute hover:bg-mist"><Ic n="Briefcase" s={18} />Become a cleaner</button>
+          </div>
+        </aside>
+        <div className="min-w-0 pb-28 lg:pb-12">
+          {view !== 'book' && <TopBar me={me} onAddr={() => setAddr(true)} onBook={book} onAccount={() => go('account')} />}
+          <div className="gutter"><div className="max-w-[980px] mx-auto">
+            {view === 'home' && <CHome me={me} onBook={book} go={go} />}
+            {view === 'book' && <BookingFlow preset={preset} onExit={() => go('home')} onDone={() => go('bookings')} />}
+            {view === 'bookings' && <CBookings me={me} onBook={book} />}
+            {view === 'account' && <CAccount me={me} account={account} signOut={signOut} replay={() => setReplay(true)} tour={() => { go('home'); setTimeout(() => setTour(true), 150); }} goPortal={goPortal} />}
+          </div></div>
+        </div>
+      </div>
+      {view !== 'book' && <nav className="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-white border-t border-line grid grid-cols-4 gutter" style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }} data-tour="nav">
+        {CNAV.map(([k, l, i]) => <button key={k} onClick={() => (k === 'book' ? book() : go(k))} aria-current={view === k ? 'page' : undefined} className={'h-[64px] flex flex-col items-center justify-center gap-1 text-[11.5px] font-semibold relative ' + (view === k ? 'text-ink' : 'text-mute')}><Ic n={i} s={22} w={view === k ? 2.2 : 1.8} />{l}{k === 'bookings' && upcomingCount > 0 && <span className="absolute top-2.5 left-1/2 ml-2 w-4 h-4 rounded-full bg-deep text-white text-[10px] grid place-items-center">{upcomingCount}</span>}</button>)}
+      </nav>}
+      {addr && <AddressSheet me={me} onClose={() => setAddr(false)} />}
+      {tour && view === 'home' && <Tour onDone={() => { LS.set('neatly.toured', 1); setTour(false); }} />}
+      {replay && <Intro overlay onDone={() => setReplay(false)} />}
+    </div>
+  );
+}
+function TopBar({ me, onAddr, onBook, onAccount }) {
+  const [q, setQ] = useState('');
+  const terms = q.trim().toLowerCase();
+  const results = !terms ? [] : [
+    ...Object.entries(LEVEL_META).filter(([k, m]) => (m.name + ' ' + m.desc + ' ' + m.inc.join(' ')).toLowerCase().includes(terms)).map(([k, m]) => ({ label: m.name, sub: m.desc, icon: m.icon, go: { level: k } })),
+    ...ADDONS.filter(a => a.name.toLowerCase().includes(terms)).map(a => ({ label: a.name, sub: `Extra · +${money(a.price)}`, icon: 'Plus', go: { level: 'standard', addons: [a.id] } })),
+  ];
+  return (
+    <div className="bg-white border-b border-line gutter sticky top-[calc(61px+env(safe-area-inset-top,0px))] z-30">
+      <div className="max-w-[980px] mx-auto py-3 flex flex-wrap items-center gap-3">
+        <button onClick={onAddr} data-tour="address" className="h-11 px-3 rounded-full bg-mist border border-line flex items-center gap-2 text-[14px] font-semibold min-w-0 max-w-[60%] sm:max-w-none"><Ic n="MapPin" s={17} className="text-deep shrink-0" /><span className="truncate">{me.hood}, {me.town}</span><Ic n="ChevronDown" s={15} className="text-mute shrink-0" /></button>
+        <button onClick={onAccount} aria-label="Account" className="ml-auto sm:order-3 w-11 h-11 rounded-full bg-soft text-deep font-semibold grid place-items-center">{me.name.split(' ').map(w => w[0]).join('').slice(0, 2)}</button>
+        <div className="relative w-full sm:w-auto sm:flex-1 sm:order-2" data-tour="search">
+          <Ic n="Search" s={17} className="absolute left-4 top-1/2 -translate-y-1/2 text-mute" />
+          <label htmlFor="c-search" className="sr-only">Search services</label>
+          <input id="c-search" value={q} onChange={e => setQ(e.target.value)} placeholder="Search: deep clean, oven, move out…" className="field h-11 rounded-full pl-11 bg-mist" />
+          {results.length > 0 && <div className="absolute left-0 right-0 top-[50px] card lift p-1.5 z-40 fade">
+            {results.slice(0, 6).map(r => <button key={r.label} onClick={() => { setQ(''); onBook(r.go); }} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-mist text-left"><span className="w-9 h-9 rounded-xl bg-soft grid place-items-center text-deep"><Ic n={r.icon} s={16} /></span><span className="min-w-0"><span className="block text-[14px] font-semibold">{r.label}</span><span className="block text-[12.5px] text-mute truncate">{r.sub}</span></span></button>)}
+          </div>}
+          {terms && results.length === 0 && <div className="absolute left-0 right-0 top-[50px] card lift p-4 z-40 text-[13.5px] text-mute">No matches. Try “deep”, “fridge” or “windows”.</div>}
+        </div>
+      </div>
+    </div>
+  );
+}
+function AddressSheet({ me, onClose }) {
+  const { db, act } = useStore();
+  const [zip, setZip] = useState(me.zip || '06107');
+  const town = ZIPS[zip];
+  const ok = db.settings.zips.includes(zip);
+  const [hood, setHood] = useState(me.hood);
+  return (
+    <div className="fixed inset-0 z-[70] bg-ink/40 flex items-end sm:items-center justify-center" onClick={onClose}>
+      <div className="w-full sm:max-w-[440px] bg-white rounded-t-3xl sm:rounded-3xl p-6 fade" style={{ paddingBottom: 'calc(24px + env(safe-area-inset-bottom, 0px))' }} onClick={e => e.stopPropagation()} role="dialog" aria-label="Change address">
+        <div className="flex items-center justify-between"><h2 className="text-[20px] font-semibold">Where should we clean?</h2><button aria-label="Close" onClick={onClose} className="w-9 h-9 rounded-full bg-mist grid place-items-center"><Ic n="X" s={16} /></button></div>
+        <label htmlFor="ad-zip" className="lbl mt-5 block">ZIP code</label>
+        <input id="ad-zip" inputMode="numeric" maxLength={5} className="field mt-1.5 tnum" value={zip} onChange={e => { const z = e.target.value.replace(/\D/g, ''); setZip(z); if (HOODS[ZIPS[z]]) setHood(HOODS[ZIPS[z]][0]); }} />
+        {zip.length === 5 && <div className={'text-[13px] mt-2 flex items-center gap-1.5 ' + (ok ? 'text-deep' : 'text-warnink')}><Ic n={ok ? 'CheckCircle2' : 'Clock'} s={15} />{ok ? `We clean in ${town}.` : `${town || 'This area'} isn’t open yet. We’ll email you when it is.`}</div>}
+        {town && HOODS[town] && <><label htmlFor="ad-hood" className="lbl mt-4 block">Neighborhood</label><select id="ad-hood" className="field mt-1.5" value={hood} onChange={e => setHood(e.target.value)}>{HOODS[town].map(h => <option key={h}>{h}</option>)}</select></>}
+        <label htmlFor="ad-street" className="lbl mt-4 block">Street address</label>
+        <input id="ad-street" className="field mt-1.5" placeholder="Shown to your cleaner only on the day" />
+        <button disabled={zip.length !== 5 || !town} className="btn btn-p w-full h-[50px] mt-5" onClick={() => { act(d => { const c = d.customers.find(x => x.id === d.me); c.zip = zip; c.town = town; c.hood = hood; if (!d.settings.zips.includes(zip) && !d.waitlist.some(w => w.email === c.email && w.zip === zip)) d.waitlist.push({ email: c.email, zip, notified: false }); }); onClose(); }}>Save address</button>
+      </div>
+    </div>
+  );
+}
+function CHome({ me, onBook, go }) {
+  const { db } = useStore();
+  const mine = db.bookings.filter(b => b.cust === me.id);
+  const next = mine.filter(b => !['completed', 'cancelled'].includes(b.status)).sort((a, b) => a.date.localeCompare(b.date))[0];
+  const last = mine.filter(b => b.status === 'completed').sort((a, b) => b.date.localeCompare(a.date))[0];
+  const covered = db.settings.zips.includes(me.zip || '06107') || (!me.zip && true);
+  const isNew = mine.length === 0;
+  const tile = (k) => { const m = LEVEL_META[k]; const p = quote(db.settings, { level: k, beds: 3, baths: 2, sqft: '1,500–2,500', addons: [], freq: 'once' }); return { k, m, p }; };
+  return (
+    <div className="py-6 grid grid-cols-1 gap-7">
+      <div><h1 className="text-[26px] sm:text-[30px] font-semibold">{greet()}, {me.name.split(' ')[0]}</h1><p className="text-[14.5px] text-mute mt-1">What can we clean for you?</p></div>
+      {!covered && <div className="card p-4 flex gap-3 items-start border-warn bg-[#FFFBF2]"><Ic n="Clock" s={18} className="text-warnink shrink-0 mt-0.5" /><div className="text-[14px]"><b>We’re not in {me.town} yet.</b> You’re on the waitlist, and we’ll email {me.email} the day we open. You can still look around.</div></div>}
+      <div data-tour="tiles" className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        {['standard', 'deep', 'move', 'light'].map(tile).map(({ k, m, p }) => (
+          <button key={k} onClick={() => onBook({ level: k })} className="card p-4 text-left hover:border-sky hover:-translate-y-0.5 transition">
+            <span className="w-12 h-12 rounded-2xl bg-soft grid place-items-center text-deep"><Ic n={m.icon} s={22} /></span>
+            <div className="text-[15px] font-semibold mt-3 leading-tight">{m.name}</div>
+            <div className="text-[12.5px] text-mute mt-1">About {p.hours} h · from {money(p.total)}</div>
+          </button>
+        ))}
+      </div>
+      {next && <div><div className="flex items-center justify-between mb-2.5"><h2 className="text-[18px] font-semibold">Your next clean</h2><button onClick={() => go('bookings')} className="text-[13.5px] font-semibold text-deep">See all</button></div><Tracker b={next} /></div>}
+      {isNew ? (
+        <div className="rounded-3xl bg-ink text-white p-6 flex flex-wrap items-center gap-4 justify-between">
+          <div className="min-w-0"><div className="text-[12px] font-semibold tracking-[0.14em] uppercase text-sky">Welcome offer</div><div className="text-[22px] font-semibold mt-1.5">$15 off your first clean</div><div className="text-[14px] text-white/70 mt-1">Applied automatically at checkout.</div></div>
+          <button onClick={() => onBook({ level: 'standard' })} className="btn bg-sky text-ink hover:bg-[#95CDE9]">Book now</button>
+        </div>
+      ) : (
+        <div className="rounded-3xl bg-ink text-white p-6 flex flex-wrap items-center gap-4 justify-between">
+          <div className="min-w-0"><div className="text-[12px] font-semibold tracking-[0.14em] uppercase text-sky">Give $25, get $25</div><div className="text-[22px] font-semibold mt-1.5">Share code {me.ref}</div><div className="text-[14px] text-white/70 mt-1">You both get credit after their first clean.</div></div>
+          <button onClick={() => go('account')} className="btn bg-sky text-ink hover:bg-[#95CDE9]">Invite friends</button>
+        </div>
+      )}
+      {last && <div><h2 className="text-[18px] font-semibold mb-2.5">Book again</h2>
+        <button onClick={() => onBook({ level: last.level, beds: last.beds, baths: last.baths, addons: last.addons })} className="card p-4 w-full text-left flex items-center gap-4 hover:border-sky">
+          <Avatar t={db.cleaners.find(c => c.id === last.cleaner)?.initials || '—'} size={46} />
+          <div className="min-w-0 flex-1"><div className="font-semibold">{LEVEL_META[last.level].name} with {db.cleaners.find(c => c.id === last.cleaner)?.name}</div><div className="text-[13px] text-mute">Last time: {fmtDay(last.date)} · {last.beds} bd · {last.baths} ba</div></div>
+          <span className="btn btn-p btn-s">Rebook</span>
+        </button></div>}
+      <div><h2 className="text-[18px] font-semibold mb-2.5">Popular extras</h2>
+        <div className="hscroll -mx-1 px-1"><div className="flex gap-3 w-max pb-1">
+          {ADDONS.map(a => <button key={a.id} onClick={() => onBook({ level: 'standard', addons: [a.id] })} className="card p-4 w-[170px] text-left hover:border-sky shrink-0"><span className="w-10 h-10 rounded-xl bg-mist grid place-items-center text-deep"><Ic n={{ fridge: 'Refrigerator', oven: 'Flame', windows: 'AppWindow', laundry: 'Shirt', dishes: 'UtensilsCrossed', cabinets: 'Archive' }[a.id]} s={19} /></span><div className="text-[14px] font-semibold mt-3">{a.name}</div><div className="text-[12.5px] text-mute">+{money(a.price)}</div></button>)}
+        </div></div>
+      </div>
+      <div className="grid sm:grid-cols-3 gap-3">
+        {[['ShieldCheck', 'Vetted pros', 'ID and background checked'], ['RotateCcw', 'Re-clean guarantee', 'Free within 24 hours'], ['Lock', 'Pay after', 'Charged when it’s done']].map(([i, t, s]) => <div key={t} className="flex items-center gap-3 rounded-2xl bg-white border border-line p-4"><Ic n={i} s={20} className="text-deep shrink-0" /><div><div className="text-[14px] font-semibold">{t}</div><div className="text-[12.5px] text-mute">{s}</div></div></div>)}
+      </div>
+    </div>
+  );
+}
+
+function BookingFlow({ preset, onExit, onDone }) {
+  const { db, act, later } = useStore();
+  const me = db.customers.find(c => c.id === db.me);
+  const first = db.bookings.filter(b => b.cust === me.id).length === 0;
+  const [step, setStep] = useState(0);
+  const [b, setB] = useState({ beds: preset?.beds ?? 3, baths: preset?.baths ?? 2, sqft: '1,500–2,500', pets: false, level: preset?.level ?? 'standard', addons: preset?.addons ?? [], notes: '', dnr: [], entry: 'home', date: '2026-11-10', time: '10:00 AM', freq: 'biweekly', useCredit: true });
+  const [more, setMore] = useState(false);
+  const [doneId, setDoneId] = useState(null);
+  const set = (k, v) => setB(s => ({ ...s, [k]: v }));
+  const tog = (k, v) => setB(s => ({ ...s, [k]: s[k].includes(v) ? s[k].filter(x => x !== v) : [...s[k], v] }));
+  const promoOff = first ? 15 : 0;
+  const p = quote(db.settings, { ...b, credit: b.useCredit ? me.credits : 0, promoOff });
+  const covered = db.settings.zips.includes(me.zip || '06107');
+  const ref = useRef({}); ref.current = { step, done: !!doneId, total: p.total, level: b.level, town: me.town, email: me.email };
+  useEffect(() => () => { const s = ref.current; if (!s.done && s.step >= 1) act(d => { d.drafts.push({ id: 'q' + Date.now(), email: s.email, town: s.town, level: s.level, total: s.total, followed: false }); }); }, []);
+  const confirm = () => {
+    let id;
+    act(d => {
+      id = 'B-' + (++d.seq);
+      const c = d.customers.find(x => x.id === d.me);
+      const nb = { id, cust: c.id, town: c.town, hood: c.hood, date: b.date, time: b.time, level: b.level, beds: b.beds, baths: b.baths, sqft: b.sqft, addons: b.addons, freq: b.freq, notes: b.notes, entry: b.entry, dnr: b.dnr, status: 'unassigned', cleaner: null, rating: null, review: '', paidOut: false, flags: {}, bonus: 0, credit: b.useCredit ? c.credits : 0, promoOff };
+      nb.price = quote(d.settings, nb);
+      c.credits -= nb.price.credit;
+      d.bookings.push(nb);
+    });
+    setDoneId(id); window.scrollTo(0, 0);
+    later(() => act(() => { }, ['dispatch', 'escalate', 'recurring']), 1800);
+  };
+  if (doneId) {
+    const nb = db.bookings.find(x => x.id === doneId);
+    return (
+      <div className="py-8 max-w-[640px] mx-auto fade">
+        <div className="flex items-center gap-3"><span className="w-12 h-12 rounded-full bg-mint grid place-items-center"><Ic n="Check" s={24} w={2.6} /></span><div><h1 className="text-[26px] font-semibold">You’re booked!</h1><p className="text-[14px] text-mute">Confirmation sent to {me.email}.</p></div></div>
+        <div className="mt-6">{nb && <Tracker b={nb} />}</div>
+        <button onClick={onDone} className="btn btn-p mt-5 w-full sm:w-auto">View my bookings<Ic n="ArrowRight" s={16} /></button>
+      </div>
+    );
+  }
+  const days = Array.from({ length: 14 }, (_, k) => addDays('2026-11-04', k)).filter(dd => !['2026-11-15'].includes(dd));
+  const titles = ['Your home', 'Your clean', 'Time and payment'];
+  return (
+    <div className="py-4">
+      <div className="flex items-center gap-3 sticky top-[calc(61px+env(safe-area-inset-top,0px))] z-20 bg-mist py-2">
+        <button onClick={() => (step === 0 ? onExit() : setStep(step - 1))} aria-label={step === 0 ? 'Close booking' : 'Back'} className="w-10 h-10 rounded-full bg-white border border-line grid place-items-center shrink-0"><Ic n={step === 0 ? 'X' : 'ArrowLeft'} s={18} /></button>
+        <div className="flex-1 min-w-0"><div className="text-[12.5px] text-mute">Step {step + 1} of 3</div><div className="text-[18px] font-semibold leading-tight">{titles[step]}</div></div>
+      </div>
+      <div className="grid grid-cols-3 gap-1.5 mt-2">{titles.map((_, k) => <div key={k} className={'h-1.5 rounded-full ' + (k <= step ? 'bg-deep' : 'bg-line')} />)}</div>
+      {!covered && <div className="mt-4 card p-4 text-[13.5px] border-warn bg-[#FFFBF2]">We’re not taking bookings in {me.town} yet. Change your address on the home screen, or explore and we’ll email you when we open.</div>}
+      <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_320px] gap-5 mt-5 items-start">
+        <div className="card p-5 sm:p-6 min-w-0 fade" key={step}>
+          {step === 0 && <>
+            <div className="divide-y divide-line">
+              <Stepper id="bk-beds" label="Bedrooms" value={b.beds} set={v => set('beds', v)} />
+              <Stepper id="bk-baths" label="Bathrooms" value={b.baths} set={v => set('baths', v)} min={1} max={6} />
+            </div>
+            <div className="lbl mt-5 mb-2">Size (sq ft)</div>
+            <div className="flex flex-wrap gap-2">{SQFT.map(s => <Chip key={s} on={b.sqft === s} onClick={() => set('sqft', s)}>{s}</Chip>)}</div>
+            <div className="mt-5 flex items-center justify-between"><span className="text-[14.5px] font-medium">Pets at home</span><Toggle label="Pets at home" on={b.pets} onChange={v => set('pets', v)} /></div>
+          </>}
+          {step === 1 && <>
+            <div className="grid gap-2">
+              {Object.entries(LEVEL_META).map(([k, m]) => { const on = b.level === k; return (
+                <button key={k} onClick={() => set('level', k)} aria-pressed={on} className={'text-left rounded-2xl border p-4 flex items-center gap-3 transition ' + (on ? 'border-deep bg-mist ring-2 ring-soft' : 'border-line hover:border-sky')}>
+                  <span className={'w-10 h-10 rounded-xl grid place-items-center shrink-0 ' + (on ? 'bg-sky' : 'bg-soft text-deep')}><Ic n={m.icon} s={18} /></span>
+                  <span className="min-w-0 flex-1"><span className="block font-semibold">{m.name}</span><span className="block text-[13px] text-mute">{m.desc}</span></span>
+                  <span className={'w-5 h-5 rounded-full border-2 grid place-items-center shrink-0 ' + (on ? 'border-deep' : 'border-[#C9D7DF]')}>{on && <span className="w-2.5 h-2.5 rounded-full bg-deep" />}</span>
+                </button>); })}
+            </div>
+            <div className="lbl mt-6 mb-2">Add extras</div>
+            <div className="flex flex-wrap gap-2">{ADDONS.map(a => <Chip key={a.id} on={b.addons.includes(a.id)} onClick={() => tog('addons', a.id)} icon={b.addons.includes(a.id) ? 'Check' : 'Plus'}>{a.name} · {money(a.price)}</Chip>)}</div>
+            <button onClick={() => setMore(!more)} aria-expanded={more} className="mt-6 w-full flex items-center justify-between h-12 px-4 rounded-xl bg-mist border border-line text-[14px] font-semibold"><span className="flex items-center gap-2"><Ic n="MessageSquare" s={16} className="text-deep" />Instructions, rooms to skip, entry</span><Ic n="ChevronDown" s={16} className={'transition-transform ' + (more ? 'rotate-180' : '')} /></button>
+            {more && <div className="mt-3 grid gap-4 fade">
+              <div><label htmlFor="bk-notes" className="lbl">Notes for your cleaner</label><textarea id="bk-notes" rows={3} className="field mt-1.5" placeholder="Please use fragrance-free products. The dog will be in the backyard." value={b.notes} onChange={e => set('notes', e.target.value)} /></div>
+              <div><div className="lbl mb-2">Rooms to skip</div><div className="flex flex-wrap gap-2">{['Home office', 'Primary bedroom', 'Basement', 'Garage'].map(r => <Chip key={r} on={b.dnr.includes(r)} icon={b.dnr.includes(r) ? 'Ban' : null} onClick={() => tog('dnr', r)}>{r}</Chip>)}</div></div>
+              <div><div className="lbl mb-2">Getting in</div><div className="flex flex-wrap gap-2">{[['home', 'I’ll be home'], ['code', 'Door code'], ['key', 'Key or lockbox']].map(([k, l]) => <Chip key={k} on={b.entry === k} onClick={() => set('entry', k)}>{l}</Chip>)}</div>
+                {b.entry !== 'home' && <input id="bk-entry" className="field mt-2" type={b.entry === 'code' ? 'password' : 'text'} placeholder={b.entry === 'code' ? 'Door code' : 'Where to find the key'} />}
+                <div className="text-[12px] text-mute mt-2 flex gap-1.5"><Ic n="Lock" s={13} className="text-deep shrink-0 mt-0.5" />Encrypted. Only your cleaner sees it, only on the day.</div></div>
+            </div>}
+          </>}
+          {step === 2 && <>
+            <div className="lbl mb-2">Day</div>
+            <div className="hscroll -mx-1 px-1"><div className="flex gap-2 w-max pb-1">{days.map(dd => { const on = b.date === dd; return <button key={dd} onClick={() => set('date', dd)} aria-pressed={on} className={'w-[64px] h-[72px] rounded-2xl border flex flex-col items-center justify-center shrink-0 ' + (on ? 'bg-deep border-deep text-white' : 'bg-white border-line hover:border-sky')}><span className={'text-[11.5px] ' + (on ? 'text-white/80' : 'text-mute')}>{D(dd).toLocaleDateString('en-US', { weekday: 'short' })}</span><span className="text-[20px] font-semibold tnum">{D(dd).getDate()}</span></button>; })}</div></div>
+            <div className="lbl mt-5 mb-2">Arrival time</div>
+            <div className="grid grid-cols-4 gap-2">{TIMES.map(t => <button key={t} onClick={() => set('time', t)} className={'h-10 rounded-xl border text-[13px] tnum ' + (b.time === t ? 'bg-soft border-sky font-semibold' : 'border-line')}>{t.replace(':00', '')}</button>)}</div>
+            <div className="lbl mt-5 mb-2">How often</div>
+            <div className="grid grid-cols-2 gap-2">{Object.entries(FREQ).map(([k, l]) => <button key={k} onClick={() => set('freq', k)} aria-pressed={b.freq === k} className={'min-h-[52px] rounded-xl border px-3 py-2 text-left text-[13.5px] ' + (b.freq === k ? 'border-deep bg-mist' : 'border-line')}><span className="font-semibold block">{l}</span>{db.settings.discounts[k] > 0 ? <span className="text-[12px] text-deep">Save {db.settings.discounts[k]}%</span> : <span className="text-[12px] text-mute">No plan</span>}</button>)}</div>
+            <div className="lbl mt-5 mb-2">Pay with</div>
+            <div className="grid sm:grid-cols-2 gap-2">
+              <button className="h-12 rounded-xl border border-deep bg-mist px-4 flex items-center gap-2.5 text-[14px] font-medium"><Ic n="Apple" s={17} />Apple Pay</button>
+              <button className="h-12 rounded-xl border border-line px-4 flex items-center gap-2.5 text-[14px] font-medium"><Ic n="CreditCard" s={17} />Add a card</button>
+            </div>
+            {first && <div className="mt-3 rounded-xl bg-mint/50 px-4 py-3 text-[13.5px] flex items-center gap-2"><Ic n="Gift" s={16} />Welcome offer applied: $15 off your first clean.</div>}
+            {me.credits > 0 && <div className="mt-3 flex items-center justify-between rounded-xl bg-mint/50 px-4 h-12 text-[14px]"><span>Use ${me.credits} credit</span><Toggle label="Use credit" on={b.useCredit} onChange={v => set('useCredit', v)} /></div>}
+            <p className="text-[12.5px] text-mute mt-4">Charged after the clean. Free cancellation until {db.settings.cancelHours} hours before.</p>
+          </>}
+        </div>
+        <aside className="card p-5 min-w-0 lg:sticky lg:top-[140px]">
+          <div className="font-semibold">{LEVEL_META[b.level].name}</div>
+          <div className="text-[13px] text-mute">{b.beds} bd · {b.baths} ba · {me.hood}</div>
+          {step === 2 && <div className="text-[13px] text-mute">{fmtDay(b.date)} · {b.time}</div>}
+          <div className="mt-3 grid gap-1.5 text-[13.5px]">
+            <div className="flex justify-between"><span className="text-mute">Cleaning</span><span className="tnum">{money(p.base)}</span></div>
+            {p.add > 0 && <div className="flex justify-between"><span className="text-mute">Extras</span><span className="tnum">{money(p.add)}</span></div>}
+            {p.disc > 0 && <div className="flex justify-between"><span className="text-mute">Plan discount</span><span className="tnum">{money(-p.disc)}</span></div>}
+            <div className="flex justify-between"><span className="text-mute">Service fee</span><span className="tnum">{money(p.fee)}</span></div>
+            {p.promo > 0 && <div className="flex justify-between"><span className="text-mute">Welcome offer</span><span className="tnum">{money(-p.promo)}</span></div>}
+            {p.credit > 0 && <div className="flex justify-between"><span className="text-mute">Credit</span><span className="tnum">{money(-p.credit)}</span></div>}
+          </div>
+        </aside>
+      </div>
+      <div className="sticky bottom-0 z-20 mt-5 -mx-4 sm:mx-0 px-4 sm:px-0 bg-mist pt-3" style={{ paddingBottom: 'calc(14px + env(safe-area-inset-bottom, 0px))' }}>
+        <div className="card lift p-3 flex items-center gap-3">
+          <div className="pl-2 min-w-0"><div className="text-[12px] text-mute">Total · about {p.hours} h</div><div className="text-[22px] font-semibold tnum leading-tight">{money(p.total)}</div></div>
+          {step < 2 ? <button className="btn btn-p ml-auto h-[50px] px-6" onClick={() => { setStep(step + 1); window.scrollTo(0, 0); }}>Continue<Ic n="ArrowRight" s={16} /></button>
+            : <button className="btn btn-d ml-auto h-[50px] px-6" disabled={!covered} onClick={confirm}>Place booking</button>}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function CBookings({ me, onBook }) {
+  const { db, act } = useStore();
+  const mine = db.bookings.filter(b => b.cust === me.id);
+  const upcoming = mine.filter(b => !['completed', 'cancelled'].includes(b.status)).sort((a, b) => a.date.localeCompare(b.date));
+  const past = mine.filter(b => ['completed', 'cancelled'].includes(b.status)).sort((a, b) => b.date.localeCompare(a.date));
+  const [tab, setTab] = useState('upcoming');
+  const [rate, setRate] = useState({});
+  const [msg, setMsg] = useState('');
+  const msgs = db.messages.filter(m => m.cust === me.id);
+  const cancel = (id) => act(d => { const x = d.bookings.find(b => b.id === id); x.status = 'cancelled'; x.flags.nextCreated = true; });
+  const submitRating = (id) => { const r = rate[id]; if (!r?.stars) return; act(d => { const x = d.bookings.find(b => b.id === id); x.rating = r.stars; x.review = r.text || ''; x.tip = r.tip || 0; }, ['lowrating', 'referral']); };
+  return (
+    <div className="py-6">
+      <h1 className="text-[26px] font-semibold">Bookings</h1>
+      <div className="flex p-1 rounded-xl bg-white border border-line w-max mt-4">{[['upcoming', `Upcoming (${upcoming.length})`], ['past', `Past (${past.length})`]].map(([k, l]) => <button key={k} onClick={() => setTab(k)} className={'h-9 px-4 rounded-lg text-[13.5px] font-semibold ' + (tab === k ? 'bg-ink text-white' : 'text-mute')}>{l}</button>)}</div>
+      <div className="grid gap-4 mt-5">
+        {tab === 'upcoming' && upcoming.length === 0 && <div className="card p-8 text-center"><span className="w-12 h-12 rounded-2xl bg-soft text-deep grid place-items-center mx-auto"><Ic n="CalendarDays" s={22} /></span><div className="font-semibold mt-3">No upcoming cleanings</div><div className="text-[14px] text-mute mt-1">Book one and follow it live right here.</div><button onClick={() => onBook()} className="btn btn-p mt-4">Book a cleaning</button></div>}
+        {tab === 'upcoming' && upcoming.map(b => (
+          <div key={b.id} className="grid gap-2">
+            <Tracker b={b} />
+            <div className="flex flex-wrap gap-2"><button className="btn btn-g btn-s"><Ic n="CalendarClock" s={15} />Reschedule</button><button className="btn btn-g btn-s" onClick={() => cancel(b.id)}>{b.freq !== 'once' ? 'Skip this visit' : 'Cancel'} {daysFrom(TODAY, b.date) * 24 > db.settings.cancelHours ? '(free)' : `($${db.settings.lateCancelFee} fee)`}</button></div>
+          </div>
+        ))}
+        {tab === 'upcoming' && upcoming.some(b => b.cleaner) && <div className="card p-5">
+          <div className="font-semibold">Messages</div>
+          <div className="mt-3 grid gap-2 max-h-[240px] overflow-y-auto">
+            {msgs.length === 0 && <div className="text-[13.5px] text-mute">Say hi or share anything your cleaner should know.</div>}
+            {msgs.map((m, k) => <div key={k} className={'rounded-2xl px-3.5 py-2.5 text-[13.5px] max-w-[85%] ' + (m.from === me.id ? 'bg-soft justify-self-end' : 'bg-mist')}><div>{m.text}</div><div className="text-[11px] text-mute mt-1">{m.from === me.id ? 'You' : 'Your cleaner'} · {m.t}</div></div>)}
+          </div>
+          <form className="flex gap-2 mt-3" onSubmit={(e) => { e.preventDefault(); if (!msg.trim()) return; act(d => { d.messages.push({ cust: d.me, from: d.me, text: msg.trim(), t: 'Just now' }); }); setMsg(''); }}>
+            <label htmlFor="c-msg" className="sr-only">Message your cleaner</label>
+            <input id="c-msg" className="field" placeholder="Message your cleaner" value={msg} onChange={e => setMsg(e.target.value)} /><button className="btn btn-p" aria-label="Send"><Ic n="Send" s={16} /></button>
+          </form>
+          <div className="text-[11.5px] text-mute mt-2">Phone numbers stay private on both sides.</div>
+        </div>}
+        {tab === 'past' && past.length === 0 && <div className="card p-6 text-[14px] text-mute">Your finished cleanings and receipts will show up here.</div>}
+        {tab === 'past' && past.map(b => {
+          const c = db.cleaners.find(x => x.id === b.cleaner); const r = rate[b.id] || {};
+          return (
+            <div key={b.id} className="card p-5">
+              <div className="flex flex-wrap justify-between gap-2"><div><div className="font-semibold">{LEVEL_META[b.level].name}{c ? ` with ${c.name}` : ''}</div><div className="text-[13px] text-mute">{fmtDay(b.date)} · {b.id}</div></div><div className="text-right"><div className="font-semibold tnum">{b.status === 'cancelled' ? 'Cancelled' : money(b.price.total)}</div>{b.status !== 'cancelled' && <div className="text-[12px] text-mute">Receipt emailed</div>}</div></div>
+              {b.status === 'completed' && (b.rating != null ? <div className="mt-3 flex items-center gap-3 text-[13px] text-mute"><Stars value={b.rating} size={17} />{b.review && <span>“{b.review}”</span>}</div> : (
+                <div className="mt-4 rounded-xl bg-mist p-4 grid gap-3">
+                  <div className="text-[14px] font-semibold">How was your clean?</div>
+                  <Stars value={r.stars || 0} onChange={(v) => setRate({ ...rate, [b.id]: { ...r, stars: v } })} size={30} />
+                  <input id={'rv-' + b.id} className="field" placeholder="What went well? (optional)" value={r.text || ''} onChange={e => setRate({ ...rate, [b.id]: { ...r, text: e.target.value } })} />
+                  <div className="flex flex-wrap items-center gap-2"><span className="text-[13px] text-mute">Tip:</span>{[0, 10, 15, 20].map(t => <Chip key={t} on={(r.tip || 0) === t} onClick={() => setRate({ ...rate, [b.id]: { ...r, tip: t } })}>{t ? '$' + t : 'No tip'}</Chip>)}</div>
+                  <button disabled={!r.stars} onClick={() => submitRating(b.id)} className="btn btn-p justify-self-start">Submit</button>
+                </div>
+              ))}
+              {b.status === 'completed' && <button onClick={() => onBook({ level: b.level, beds: b.beds, baths: b.baths, addons: b.addons })} className="mt-3 text-[13.5px] font-semibold text-deep">Book this again</button>}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function CAccount({ me, account, signOut, replay, tour, goPortal }) {
+  const { db } = useStore();
+  const [copied, setCopied] = useState(false);
+  const [faq, setFaq] = useState(-1);
+  const [notif, setNotif] = useState({ texts: account.texts !== false, email: true, offers: false });
+  const plan = db.bookings.find(b => b.cust === me.id && b.freq !== 'once' && !['completed', 'cancelled'].includes(b.status));
+  const faqs = [
+    ['Who will clean my home?', 'An independent pro who passed an identity check and a background check, completed our training and keeps a high rating.'],
+    ['When am I charged?', 'After the clean is complete. We authorize your card 24 hours before the visit.'],
+    ['What if something was missed?', 'Tell us within 24 hours and we’ll come back to fix it for free.'],
+    ['Can I cancel?', `Free until ${db.settings.cancelHours} hours before. After that, a $${db.settings.lateCancelFee} fee applies.`],
+  ];
+  const Row = ({ icon, label, value, onClick }) => <button onClick={onClick} className="w-full flex items-center gap-3 px-5 py-4 text-left hover:bg-mist"><Ic n={icon} s={19} className="text-deep shrink-0" /><span className="flex-1 min-w-0"><span className="block text-[14.5px] font-medium">{label}</span>{value && <span className="block text-[12.5px] text-mute truncate">{value}</span>}</span><Ic n="ChevronRight" s={16} className="text-mute" /></button>;
+  return (
+    <div className="py-6 grid grid-cols-1 gap-5">
+      <div className="flex items-center gap-4"><span className="w-16 h-16 rounded-full bg-soft text-deep text-[22px] font-semibold grid place-items-center">{me.name.split(' ').map(w => w[0]).join('').slice(0, 2)}</span><div className="min-w-0"><h1 className="text-[24px] font-semibold">{me.name}</h1><div className="text-[13.5px] text-mute truncate">{me.email}</div><div className="pill bg-mist border border-line text-mute mt-1.5">{account.provider === 'Email' ? 'Signed up with email' : `Signed in with ${account.provider}`}</div></div></div>
+      <div className="card p-5">
+        <div className="lbl">Give $25, get $25</div>
+        <div className="mt-3 flex items-center gap-2"><code className="flex-1 h-11 rounded-xl bg-mist border border-line grid place-items-center font-semibold tracking-wider select-all">{me.ref}</code><button className="btn btn-g" onClick={() => { try { navigator.clipboard.writeText(me.ref).then(() => setCopied(true), () => { }); } catch (e) { } }}>{copied ? 'Copied' : 'Copy'}</button></div>
+        <div className="text-[13px] text-mute mt-2">Credit balance: <b className="text-ink tnum">{money(me.credits)}</b></div>
+      </div>
+      {plan && <div className="card p-5"><div className="lbl">Your plan</div><div className="font-semibold mt-2">{LEVEL_META[plan.level].name}, {FREQ[plan.freq].toLowerCase()}</div><div className="text-[13px] text-mute">Next visit {fmtDay(plan.date)} · saves {db.settings.discounts[plan.freq]}%</div><div className="flex gap-2 mt-3"><button className="btn btn-g btn-s">Pause plan</button><button className="btn btn-g btn-s">Change frequency</button></div></div>}
+      <div className="card divide-y divide-line overflow-hidden">
+        <Row icon="Home" label="Saved home" value={`${me.hood}, ${me.town}`} />
+        <Row icon="CreditCard" label="Payment methods" value="Apple Pay" />
+        <Row icon="Receipt" label="Receipts" value="Every receipt is also emailed to you" />
+      </div>
+      <div className="card p-5"><div className="lbl mb-2">Notifications</div>
+        {[['texts', 'Text messages', 'Cleaner on the way, booking changes'], ['email', 'Email', 'Confirmations and receipts'], ['offers', 'Offers', 'Discounts and new services']].map(([k, l, s]) => <div key={k} className="flex items-center justify-between gap-3 py-2.5"><div><div className="text-[14.5px] font-medium">{l}</div><div className="text-[12.5px] text-mute">{s}</div></div><Toggle label={l} on={notif[k]} onChange={v => setNotif({ ...notif, [k]: v })} /></div>)}
+      </div>
+      <div className="card divide-y divide-line overflow-hidden">
+        <div className="px-5 pt-4 pb-2 lbl">Help</div>
+        {faqs.map(([q, a], k) => <div key={q}><button aria-expanded={faq === k} onClick={() => setFaq(faq === k ? -1 : k)} className="w-full flex items-center justify-between gap-3 text-left px-5 py-4 text-[14.5px] font-medium">{q}<Ic n="ChevronDown" s={16} className={'shrink-0 text-mute transition-transform ' + (faq === k ? 'rotate-180' : '')} /></button>{faq === k && <p className="px-5 pb-4 -mt-1 text-[13.5px] text-mute fade">{a}</p>}</div>)}
+        <Row icon="LifeBuoy" label="Contact support" value="Chat with us, 8 AM to 8 PM" />
+      </div>
+      <div className="card divide-y divide-line overflow-hidden">
+        <Row icon="PlayCircle" label="Watch the welcome tutorial again" onClick={replay} />
+        <Row icon="Compass" label="Show the home screen tour" onClick={tour} />
+        <Row icon="Briefcase" label="Become a cleaner" onClick={goPortal} />
+        <Row icon="LogOut" label="Sign out" onClick={signOut} />
+      </div>
+      <p className="text-[12px] text-mute">Prototype: your account lives only in this browser. Signing out keeps it so you can log back in.</p>
+    </div>
+  );
+}
+
+/* ============ CLEANER PORTAL ============ */
+function CleanerPortal() {
+  const [tab, setTab] = useState('today');
+  const tabs = [['today', 'Today', 'Sun'], ['jobs', 'Find jobs', 'Search'], ['schedule', 'Schedule', 'CalendarDays'], ['earnings', 'Earnings', 'Wallet'], ['apply', 'Apply (new cleaners)', 'UserPlus']];
+  return (
+    <div className="gutter bg-mist min-h-[80vh]"><div className="wrapw py-6">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-3"><Avatar t="MS" size={44} /><div><div className="text-[13px] text-mute">Signed in as an independent cleaner</div><div className="text-[20px] font-semibold">Maria S.</div></div></div>
+        <Sample />
+      </div>
+      <div className="hscroll mt-5 -mx-1 px-1"><div className="flex gap-1.5 w-max">
+        {tabs.map(([k, l, i]) => <button key={k} onClick={() => setTab(k)} className={'h-10 px-4 rounded-full text-[13.5px] font-medium flex items-center gap-2 border ' + (tab === k ? 'bg-ink text-white border-ink' : 'bg-white border-line hover:border-sky')}><Ic n={i} s={15} />{l}</button>)}
+      </div></div>
+      <div className="mt-5">
+        {tab === 'today' && <CleanerToday go={setTab} />}
+        {tab === 'jobs' && <JobBoard />}
+        {tab === 'schedule' && <CleanerSchedule />}
+        {tab === 'earnings' && <CleanerEarnings />}
+        {tab === 'apply' && <ApplyForm />}
+      </div>
+    </div></div>
+  );
+}
+function JobFacts({ b }) {
+  return (
+    <div className="grid grid-cols-2 sm:grid-cols-4 gap-x-4 gap-y-2 text-[13px] mt-3">
+      <span className="flex items-center gap-1.5"><Ic n="CalendarDays" s={14} className="text-mute" />{fmtDay(b.date)}, {b.time}</span>
+      <span className="flex items-center gap-1.5"><Ic n="BedDouble" s={14} className="text-mute" />{b.beds} bd · {b.baths} ba</span>
+      <span className="flex items-center gap-1.5"><Ic n="Clock" s={14} className="text-mute" />About {b.price.hours} h</span>
+      <span className="flex items-center gap-1.5"><Ic n="Ruler" s={14} className="text-mute" />{b.sqft} sq ft</span>
+    </div>
+  );
+}
+function CleanerToday({ go }) {
+  const { db, act } = useStore();
+  const me = db.cleaners.find(c => c.id === 'c1');
+  const mine = db.bookings.filter(b => b.cleaner === 'c1' && ['assigned', 'en_route', 'in_progress'].includes(b.status)).sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time));
+  const job = mine[0];
+  const [checks, setChecks] = useState({});
+  const list = job ? [...LEVEL_META[job.level].inc.slice(0, 5), ...job.addons.map(a => ADDONS.find(x => x.id === a).name)] : [];
+  const done = list.filter((_, k) => checks[k]).length;
+  const nextLabel = { assigned: 'Start trip', en_route: 'I’ve arrived · start cleaning', in_progress: 'Mark complete' };
+  const advance = () => act(d => { const x = d.bookings.find(b => b.id === job.id); x.status = { assigned: 'en_route', en_route: 'in_progress', in_progress: 'completed' }[x.status]; }, job.status === 'in_progress' ? ['reviews', 'referral', 'recurring'] : undefined);
+  const open = db.bookings.filter(b => b.status === 'unassigned' && me.towns.includes(b.town) && !(db.declined.c1 || []).includes(b.id)).length;
+  const week = db.bookings.filter(b => b.cleaner === 'c1' && b.status === 'completed' && daysFrom(b.date, TODAY) <= 7).reduce((t, b) => t + b.price.payout + (b.tip || 0), 0);
+  return (
+    <div className="grid lg:grid-cols-[1fr_320px] gap-5 items-start">
+      <div className="grid gap-4 min-w-0">
+        {job ? (
+          <div className="card p-5 sm:p-6">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div className="min-w-0"><div className="text-[12.5px] text-mute">Next job · {job.id}</div><div className="text-[20px] font-semibold">{LEVEL_META[job.level].name}</div><div className="text-[13.5px] text-mute flex items-center gap-1.5"><Ic n="MapPin" s={14} />{daysFrom(TODAY, job.date) <= 0 || job.status !== 'assigned' ? `Address unlocked · ${job.hood}, ${job.town}` : `${job.hood}, ${job.town} · full address unlocks on the day`}</div></div>
+              <div className="text-right"><div className="text-[24px] font-semibold tnum">{money(job.price.payout)}</div><div className="text-[12px] text-mute">your payout</div></div>
+            </div>
+            <JobFacts b={job} />
+            {job.notes && <div className="mt-4 rounded-xl bg-mist p-3 text-[13.5px]"><b>Customer notes:</b> {job.notes}</div>}
+            {job.dnr.length > 0 && <div className="mt-2 flex flex-wrap gap-1.5">{job.dnr.map(r => <span key={r} className="pill bg-bad text-badink"><Ic n="Ban" s={12} />Skip: {r}</span>)}</div>}
+            <div className="mt-5 grid grid-cols-5 gap-1.5">{['Confirmed', 'On the way', 'Cleaning', 'Done'].map((l, k) => { const idx = ['assigned', 'en_route', 'in_progress', 'completed'].indexOf(job.status); return <div key={l} className={k === 3 ? 'col-span-2' : ''}><div className={'h-1.5 rounded-full ' + (k <= idx ? 'bg-deep' : 'bg-line')} /><div className="text-[11.5px] mt-1.5 text-mute">{l}</div></div>; })}</div>
+            {job.status === 'in_progress' && <div className="mt-4">
+              <div className="flex justify-between text-[13px]"><span className="font-semibold">Checklist</span><span className="tnum text-mute">{done} of {list.length}</span></div>
+              <div className="mt-2 grid sm:grid-cols-2 gap-1.5">{list.map((t, k) => <button key={t} onClick={() => setChecks({ ...checks, [k]: !checks[k] })} className="flex items-center gap-2.5 h-10 px-3 rounded-xl border border-line text-[13.5px] text-left"><span className={'w-5 h-5 rounded-md border grid place-items-center ' + (checks[k] ? 'bg-deep border-deep text-white' : 'border-[#C9D7DF]')}>{checks[k] && <Ic n="Check" s={13} w={3} />}</span><span className={checks[k] ? 'line-through text-mute' : ''}>{t}</span></button>)}</div>
+            </div>}
+            <div className="mt-5 flex flex-wrap gap-2">
+              <button onClick={advance} className="btn btn-p">{nextLabel[job.status]}</button>
+              <button className="btn btn-g"><Ic n="Navigation" s={15} />Directions</button>
+              <button className="btn btn-g"><Ic n="MessageCircle" s={15} />Message</button>
+              <button className="btn btn-g"><Ic n="AlertTriangle" s={15} />Report a problem</button>
+            </div>
+            <div className="text-[12px] text-mute mt-3">Start and finish times are recorded. Before and after photos are optional and only visible to the customer and support.</div>
+          </div>
+        ) : <div className="card p-6 text-[14px] text-mute">No jobs scheduled. <button className="text-deep font-semibold" onClick={() => go('jobs')}>Find jobs</button> near you.</div>}
+      </div>
+      <div className="grid gap-4 min-w-0">
+        <div className={'card p-5 ' + (me.available ? 'bg-soft border-soft' : '')}>
+          <div className="flex items-center justify-between gap-3"><div><div className="font-semibold">Available for new jobs</div><div className="text-[12.5px] text-mute">{me.available ? 'Auto-dispatch can offer you jobs.' : 'Paused. You won’t get new offers.'}</div></div><Toggle label="Available for new jobs" on={me.available} onChange={v => act(d => { d.cleaners.find(c => c.id === 'c1').available = v; })} /></div>
+        </div>
+        <div className="grid grid-cols-2 gap-3"><Kpi label="Open jobs near you" value={open} /><Kpi label="Earned, last 7 days" value={money(week)} /></div>
+        <div className="card p-5"><div className="lbl">Your profile</div><div className="mt-3 grid gap-1.5 text-[13.5px]"><div>★ {me.rating} · {me.jobs} cleanings</div><div className="text-mute">Areas: {me.towns.join(', ')}</div><div className="text-mute">Languages: {me.langs}</div><div className={daysFrom(TODAY, me.insuranceExp) <= 30 ? 'text-warnink' : 'text-mute'}>Insurance certificate expires {fmtShort(me.insuranceExp)}</div></div></div>
+      </div>
+    </div>
+  );
+}
+function JobBoard() {
+  const { db, act } = useStore();
+  const me = db.cleaners.find(c => c.id === 'c1');
+  const [f, setF] = useState({ mine: true, min: 0 });
+  const [open, setOpen] = useState(null);
+  const jobs = db.bookings.filter(b => b.status === 'unassigned' && daysFrom(TODAY, b.date) >= 0 && !(db.declined.c1 || []).includes(b.id)).filter(b => !f.mine || me.towns.includes(b.town)).filter(b => b.price.payout >= f.min).sort((a, b) => a.date.localeCompare(b.date));
+  return (
+    <div>
+      <div className="flex flex-wrap gap-2 items-center">
+        <Chip on={f.mine} onClick={() => setF({ ...f, mine: !f.mine })} icon="MapPin">My areas only</Chip>
+        {[0, 80, 120].map(m => <Chip key={m} on={f.min === m} onClick={() => setF({ ...f, min: m })}>{m ? `$${m}+ payout` : 'Any payout'}</Chip>)}
+        <span className="text-[13px] text-mute ml-auto">{jobs.length} open {jobs.length === 1 ? 'job' : 'jobs'} · exact addresses unlock after you accept</span>
+      </div>
+      <div className="grid md:grid-cols-2 gap-4 mt-4">
+        {jobs.map(b => (
+          <div key={b.id} className="card p-5 min-w-0 fade">
+            <div className="flex justify-between gap-3"><div className="min-w-0"><div className="font-semibold">{LEVEL_META[b.level].name}</div><div className="text-[13px] text-mute flex items-center gap-1.5"><Ic n="MapPin" s={13} />{b.hood}, {b.town}</div></div><div className="text-right"><div className="text-[22px] font-semibold tnum">{money(b.price.payout)}</div>{b.bonus > 0 ? <span className="pill bg-mint text-ink">Includes ${b.bonus} bonus</span> : <div className="text-[11.5px] text-mute">payout</div>}</div></div>
+            <JobFacts b={b} />
+            {open === b.id && <div className="mt-3 rounded-xl bg-mist p-3 text-[13px] grid gap-1.5 fade">
+              <div><b>Includes:</b> {LEVEL_META[b.level].inc.join(', ')}</div>
+              {b.addons.length > 0 && <div><b>Extras:</b> {b.addons.map(a => ADDONS.find(x => x.id === a).name).join(', ')}</div>}
+              {b.notes && <div><b>Notes:</b> {b.notes}</div>}
+              {b.dnr.length > 0 && <div><b>Skip:</b> {b.dnr.join(', ')}</div>}
+            </div>}
+            <div className="mt-4 grid grid-cols-3 gap-2">
+              <button className="btn btn-g btn-s" onClick={() => setOpen(open === b.id ? null : b.id)}>{open === b.id ? 'Hide' : 'Details'}</button>
+              <button className="btn btn-g btn-s" onClick={() => act(d => { d.declined.c1 = [...(d.declined.c1 || []), b.id]; })}>Decline</button>
+              <button className="btn btn-p btn-s" onClick={() => act(d => { const x = d.bookings.find(y => y.id === b.id); x.cleaner = 'c1'; x.status = 'assigned'; d.log.unshift({ id: Math.random().toString(36).slice(2), rule: 'manual', text: `Maria S. accepted ${b.id} from the job board.`, t: 'now' }); }, ['recurring'])}>Accept</button>
+            </div>
+          </div>
+        ))}
+        {jobs.length === 0 && <div className="card p-6 text-[14px] text-mute md:col-span-2">No open jobs match these filters right now. New jobs show up here the moment a customer books.</div>}
+      </div>
+    </div>
+  );
+}
+function CleanerSchedule() {
+  const { db } = useStore();
+  const mine = db.bookings.filter(b => b.cleaner === 'c1' && b.status !== 'cancelled' && daysFrom(TODAY, b.date) >= 0).sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time));
+  return (
+    <div className="card divide-y divide-line">
+      {mine.length === 0 && <div className="p-6 text-mute text-[14px]">Nothing scheduled yet.</div>}
+      {mine.map(b => (
+        <div key={b.id} className="p-4 sm:p-5 flex flex-wrap items-center gap-4">
+          <div className="w-[64px] text-center shrink-0"><div className="text-[12px] text-mute">{D(b.date).toLocaleDateString('en-US', { weekday: 'short' })}</div><div className="text-[22px] font-semibold tnum leading-tight">{D(b.date).getDate()}</div></div>
+          <div className="flex-1 min-w-[180px]"><div className="font-semibold">{b.time} · {LEVEL_META[b.level].name}</div><div className="text-[13px] text-mute">{b.hood}, {b.town} · {b.beds} bd · {b.baths} ba · {b.freq !== 'once' ? FREQ[b.freq] : 'One time'}</div></div>
+          <Status s={b.status} /><div className="font-semibold tnum w-[64px] text-right">{money(b.price.payout)}</div>
+        </div>
+      ))}
+    </div>
+  );
+}
+function CleanerEarnings() {
+  const { db } = useStore();
+  const done = db.bookings.filter(b => b.cleaner === 'c1' && b.status === 'completed');
+  const pending = done.filter(b => b.paidOut !== 'paid').reduce((t, b) => t + b.price.payout + (b.tip || 0), 0);
+  const paid = db.payouts.filter(p => p.cleaner === 'c1');
+  const tips = done.reduce((t, b) => t + (b.tip || 0), 0);
+  return (
+    <div className="grid gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <Kpi label="Pending payout" value={money(pending)} sub={`Arrives ${db.settings.payoutDay}`} />
+        <Kpi label="Completed jobs" value={done.length} />
+        <Kpi label="Tips (100% yours)" value={money(tips)} />
+        <Kpi label="Rating" value={'★ ' + db.cleaners.find(c => c.id === 'c1').rating} />
+      </div>
+      <div className="card"><div className="px-5 pt-4 lbl">Payouts</div><div className="scrollx"><table className="tbl mt-2"><thead><tr><th>Payout</th><th>Date</th><th>Jobs</th><th>Status</th><th className="text-right">Amount</th></tr></thead><tbody>
+        {paid.map(p => <tr key={p.id}><td className="font-medium">{p.id}</td><td>{fmtShort(p.date)}</td><td className="tnum">{p.jobs}</td><td><span className={'pill ' + (p.status === 'paid' ? 'bg-mint' : 'bg-soft text-deep')}>{p.status === 'paid' ? 'Paid' : 'Scheduled'}</span></td><td className="text-right tnum font-semibold">{money(p.amount)}</td></tr>)}
+      </tbody></table></div></div>
+      <p className="text-[12.5px] text-mute">Payouts go to your bank account through Stripe. Stripe sends your yearly tax form when your earnings reach the IRS reporting threshold.</p>
+    </div>
+  );
+}
+const APPLY_T = {
+  EN: { acct: 'Create your cleaner account', p: ['Continue with Apple', 'Continue with Google', 'Continue with email'], made: 'Account created with', t: 'Clean with Neatly', s: 'Apply in about 10 minutes. You choose your jobs and your hours.', name: 'Full name', phone: 'Mobile phone', town: 'Town you live in', exp: 'Years of cleaning experience', areas: 'Towns you want to work in', svc: 'Services you offer', avail: 'Days you can work', submit: 'Submit application', ok: 'Application received. We’ll text you the next step.' },
+  PT: { acct: 'Crie sua conta de profissional', p: ['Continuar com Apple', 'Continuar com Google', 'Continuar com e-mail'], made: 'Conta criada com', t: 'Trabalhe com a Neatly', s: 'Cadastre-se em uns 10 minutos. Você escolhe os trabalhos e os horários.', name: 'Nome completo', phone: 'Celular', town: 'Cidade onde mora', exp: 'Anos de experiência com limpeza', areas: 'Cidades onde quer trabalhar', svc: 'Serviços que você faz', avail: 'Dias que pode trabalhar', submit: 'Enviar cadastro', ok: 'Cadastro recebido. Vamos te mandar o próximo passo por mensagem.' },
+  ES: { acct: 'Crea tu cuenta de profesional', p: ['Continuar con Apple', 'Continuar con Google', 'Continuar con correo'], made: 'Cuenta creada con', t: 'Trabaja con Neatly', s: 'Postúlate en unos 10 minutos. Tú eliges tus trabajos y tu horario.', name: 'Nombre completo', phone: 'Celular', town: 'Ciudad donde vives', exp: 'Años de experiencia en limpieza', areas: 'Ciudades donde quieres trabajar', svc: 'Servicios que ofreces', avail: 'Días que puedes trabajar', submit: 'Enviar solicitud', ok: 'Solicitud recibida. Te enviaremos el siguiente paso por mensaje.' },
+};
+function ApplyForm() {
+  const { act } = useStore();
+  const [lang, setLang] = useState('PT');
+  const T = APPLY_T[lang];
+  const [f, setF] = useState({ name: '', phone: '', town: 'Hartford', exp: '3', areas: ['Hartford'], svc: ['standard'], days: ['Mon', 'Wed', 'Fri'] });
+  const [sent, setSent] = useState(false);
+  const [acct, setAcct] = useState(null);
+  const tog = (k, v) => setF(s => ({ ...s, [k]: s[k].includes(v) ? s[k].filter(x => x !== v) : [...s[k], v] }));
+  return (
+    <div className="card p-5 sm:p-7 max-w-[760px]">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h2 className="text-[24px] font-semibold">{T.t}</h2>
+        <div className="flex p-1 rounded-xl bg-mist border border-line">{[['EN', 'English'], ['PT', 'Português'], ['ES', 'Español']].map(([k, l]) => <button key={k} onClick={() => setLang(k)} aria-label={l} className={'h-8 px-3 rounded-lg text-[13px] font-semibold ' + (lang === k ? 'bg-white shadow-sm' : 'text-mute')}>{l}</button>)}</div>
+      </div>
+      <p className="text-[14px] text-mute mt-1">{T.s}</p>
+      {!acct ? <div className="mt-6 max-w-[400px]"><div className="font-semibold mb-3">{T.acct}</div><ProviderButtons labels={T.p} onPick={setAcct} /></div> : sent ? <div className="mt-6 rounded-xl bg-mint/50 p-4 flex gap-3 text-[14px] fade"><Ic n="CheckCircle2" s={20} />{T.ok} <span className="text-mute">(Now visible in Admin → Cleaners → Applicants.)</span></div> :
+        <form className="mt-5 grid gap-4" onSubmit={(e) => { e.preventDefault(); if (!f.name.trim()) return; act(d => { d.applicants.unshift({ id: 'a' + Date.now(), name: f.name.trim(), town: f.town, lang: { EN: 'English', PT: 'Português', ES: 'Español' }[lang], stage: 'applied', updated: TODAY, nudged: false, exp: f.exp + ' years' }); d.log.unshift({ id: Math.random().toString(36).slice(2), rule: 'manual', text: `New cleaner application from ${f.name.trim()} (${f.town}).`, t: 'now' }); }); setSent(true); }}>
+          <div className="pill bg-mint text-ink">{T.made} {acct}</div>
+          <div className="grid sm:grid-cols-2 gap-3">
+            <div><label htmlFor="ap-name" className="lbl">{T.name}</label><input id="ap-name" required className="field mt-1.5" value={f.name} onChange={e => setF({ ...f, name: e.target.value })} /></div>
+            <div><label htmlFor="ap-phone" className="lbl">{T.phone}</label><input id="ap-phone" className="field mt-1.5" placeholder="(860) 555-0100" value={f.phone} onChange={e => setF({ ...f, phone: e.target.value })} /></div>
+            <div><label htmlFor="ap-town" className="lbl">{T.town}</label><select id="ap-town" className="field mt-1.5" value={f.town} onChange={e => setF({ ...f, town: e.target.value })}>{Object.keys(HOODS).map(t => <option key={t}>{t}</option>)}</select></div>
+            <div><label htmlFor="ap-exp" className="lbl">{T.exp}</label><select id="ap-exp" className="field mt-1.5" value={f.exp} onChange={e => setF({ ...f, exp: e.target.value })}>{['0', '1', '2', '3', '5', '10'].map(x => <option key={x} value={x}>{x === '10' ? '10+' : x}</option>)}</select></div>
+          </div>
+          <div><div className="lbl mb-2">{T.areas}</div><div className="flex flex-wrap gap-2">{['West Hartford', 'Hartford', 'Farmington', 'Bloomfield', 'Newington'].map(t => <Chip key={t} on={f.areas.includes(t)} onClick={() => tog('areas', t)}>{t}</Chip>)}</div></div>
+          <div><div className="lbl mb-2">{T.svc}</div><div className="flex flex-wrap gap-2">{Object.entries(LEVEL_META).map(([k, m]) => <Chip key={k} on={f.svc.includes(k)} onClick={() => tog('svc', k)}>{m.name}</Chip>)}</div></div>
+          <div><div className="lbl mb-2">{T.avail}</div><div className="flex flex-wrap gap-2">{['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(t => <Chip key={t} on={f.days.includes(t)} onClick={() => tog('days', t)}>{t}</Chip>)}</div></div>
+          <div className="rounded-xl bg-mist p-4 text-[13px] text-mute">After you apply: identity and background check with your written consent, sign the cleaner agreement, set up payouts, then a short training on Neatly’s cleaning standards.</div>
+          <button className="btn btn-p justify-self-start">{T.submit}</button>
+        </form>}
+    </div>
+  );
+}
+
+/* ============ ADMIN ============ */
+const ADMIN_NAV = [['overview', 'Overview', 'LayoutDashboard'], ['dispatch', 'Bookings', 'CalendarCheck'], ['cleaners', 'Cleaners', 'Users'], ['customers', 'Customers', 'Contact'], ['payments', 'Payments', 'Wallet'], ['automations', 'Automations', 'Zap'], ['support', 'Support', 'LifeBuoy'], ['pricing', 'Pricing and areas', 'SlidersHorizontal']];
+function Admin() {
+  const { db } = useStore();
+  const [tab, setTab] = useState('overview');
+  const openT = db.tickets.filter(t => t.status === 'open').length;
+  const unassigned = db.bookings.filter(b => b.status === 'unassigned').length;
+  return (
+    <div className="gutter bg-mist min-h-[80vh]"><div className="wrapw py-6 grid lg:grid-cols-[220px_1fr] gap-6 items-start">
+      <nav className="hscroll lg:overflow-visible -mx-1 px-1 lg:mx-0 lg:px-0 lg:sticky lg:top-[88px]"><div className="flex lg:flex-col gap-1 w-max lg:w-auto">
+        {ADMIN_NAV.map(([k, l, i]) => (
+          <button key={k} onClick={() => setTab(k)} className={'h-10 px-3 rounded-xl text-[14px] font-medium flex items-center gap-2.5 whitespace-nowrap ' + (tab === k ? 'bg-ink text-white' : 'hover:bg-white text-ink/80')}>
+            <Ic n={i} s={16} />{l}
+            {k === 'support' && openT > 0 && <span className="ml-auto pill bg-warn text-warnink h-5 px-1.5 text-[11px]">{openT}</span>}
+            {k === 'dispatch' && unassigned > 0 && <span className="ml-auto pill bg-warn text-warnink h-5 px-1.5 text-[11px]">{unassigned}</span>}
+          </button>
+        ))}
+      </div></nav>
+      <div className="min-w-0">
+        {tab === 'overview' && <AdminOverview go={setTab} />}
+        {tab === 'dispatch' && <AdminBookings />}
+        {tab === 'cleaners' && <AdminCleaners />}
+        {tab === 'customers' && <AdminCustomers />}
+        {tab === 'payments' && <AdminPayments />}
+        {tab === 'automations' && <AdminAutomations />}
+        {tab === 'support' && <AdminSupport />}
+        {tab === 'pricing' && <AdminPricing />}
+      </div>
+    </div></div>
+  );
+}
+const AHead = ({ title, sub, children }) => <div className="flex flex-wrap items-end justify-between gap-3 mb-5"><div className="min-w-0"><h1 className="text-[24px] font-semibold">{title}</h1>{sub && <p className="text-[13.5px] text-mute mt-0.5">{sub}</p>}</div><div className="flex flex-wrap gap-2">{children}</div></div>;
+function ActivityLog({ max = 8 }) {
+  const { db } = useStore();
+  const items = db.log.slice(0, max);
+  return (
+    <div className="card">
+      <div className="px-5 pt-4 pb-2 flex items-center justify-between"><div className="lbl">Automation activity</div><span className="text-[12px] text-mute">{db.log.length} events</span></div>
+      {items.length === 0 && <div className="px-5 pb-5 text-[13.5px] text-mute">Nothing has run yet. Press “Run automations now” to process today’s queue.</div>}
+      <div className="divide-y divide-line">{items.map(l => (
+        <div key={l.id} className="px-5 py-3 flex gap-3 fade"><span className="w-8 h-8 rounded-lg bg-soft grid place-items-center text-deep shrink-0"><Ic n={RULE_ICON[l.rule] || 'Activity'} s={15} /></span><div className="min-w-0 flex-1"><div className="text-[13.5px]">{l.text}</div><div className="text-[11.5px] text-mute mt-0.5">{(db.automations.find(a => a.id === l.rule) || { name: 'Manual action' }).name} · {l.t}</div></div></div>
+      ))}</div>
+    </div>
+  );
+}
+function RunAll() {
+  const { act } = useStore();
+  return <button className="btn btn-d" onClick={() => act(() => { }, null)}><Ic n="Zap" s={16} />Run automations now</button>;
+}
+function AdminOverview({ go }) {
+  const { db } = useStore();
+  const live = db.bookings.filter(b => b.status !== 'cancelled');
+  const gmv = live.reduce((t, b) => t + b.price.total, 0);
+  const rev = live.reduce((t, b) => t + b.price.platform, 0);
+  const upcoming = live.filter(b => daysFrom(TODAY, b.date) >= 0 && b.status !== 'completed');
+  const filled = upcoming.filter(b => b.status !== 'unassigned').length;
+  const rated = db.bookings.filter(b => b.rating != null);
+  const avg = rated.length ? (rated.reduce((t, b) => t + b.rating, 0) / rated.length).toFixed(1) : '—';
+  const recurring = live.filter(b => b.freq !== 'once').length;
+  const week = Array.from({ length: 7 }, (_, k) => addDays('2026-11-01', k));
+  const counts = week.map(d => live.filter(b => b.date === d).length);
+  const max = Math.max(3, ...counts);
+  const attn = [
+    ...db.bookings.filter(b => b.status === 'unassigned').map(b => ({ k: b.id, t: `${b.id} has no cleaner yet (${fmtDay(b.date)}, ${b.town})`, go: 'dispatch' })),
+    ...db.tickets.filter(t => t.status === 'open').map(t => ({ k: t.id, t: `${t.id}: ${t.subject}`, go: 'support' })),
+    ...db.applicants.filter(a => a.stage !== 'ready').slice(0, 2).map(a => ({ k: a.id, t: `${a.name} is waiting on “${STAGES.find(s => s.id === a.stage).name}”`, go: 'cleaners' })),
+  ];
+  return (
+    <div>
+      <AHead title="Overview" sub="Tuesday, November 3, 2026 · Greater Hartford"><RunAll /></AHead>
+      <div className="grid grid-cols-2 xl:grid-cols-4 gap-3">
+        <Kpi label="Booked value (all time)" value={money(gmv)} sub="What customers pay" />
+        <Kpi label="Neatly revenue" value={money(rev)} sub="Commission + service fees" />
+        <Kpi label="Upcoming jobs filled" value={`${filled} / ${upcoming.length}`} sub="Goal: 90% or more" tone={filled < upcoming.length ? 'attn' : ''} />
+        <Kpi label="Average rating" value={'★ ' + avg} sub={`${recurring} bookings on plans`} />
+      </div>
+      <div className="grid xl:grid-cols-[1fr_1fr] gap-4 mt-4">
+        <div className="card p-5 min-w-0">
+          <div className="lbl">Cleanings this week</div>
+          <svg viewBox="0 0 420 170" className="w-full mt-3" role="img" aria-label={'Cleanings per day: ' + counts.join(', ')}>
+            {[0, 1, 2, 3].map(g => <line key={g} x1="28" x2="414" y1={140 - g * (120 / 3)} y2={140 - g * (120 / 3)} stroke="#E3ECF1" />)}
+            {[0, 1, 2, 3].map(g => <text key={'l' + g} x="18" y={144 - g * 40} fontSize="10" fill="#5E6E7A" textAnchor="end">{Math.round(g * max / 3)}</text>)}
+            {counts.map((c, k) => { const h = c / max * 120; const x = 40 + k * 54; const today = week[k] === TODAY; return <g key={k}><rect x={x} y={140 - h} width="30" height={Math.max(h, 2)} rx="6" fill={today ? '#276C90' : '#A8D8F0'} /><text x={x + 15} y="158" fontSize="10.5" textAnchor="middle" fill={today ? '#172B3A' : '#5E6E7A'} fontWeight={today ? 600 : 400}>{D(week[k]).toLocaleDateString('en-US', { weekday: 'short' })}</text>{c > 0 && <text x={x + 15} y={134 - h} fontSize="10.5" textAnchor="middle" fill="#172B3A">{c}</text>}</g>; })}
+          </svg>
+        </div>
+        <div className="card p-5 min-w-0">
+          <div className="lbl">Needs attention</div>
+          <div className="mt-3 grid gap-2">
+            {attn.length === 0 && <div className="text-[13.5px] text-mute">All clear.</div>}
+            {attn.slice(0, 6).map(a => <button key={a.k} onClick={() => go(a.go)} className="text-left flex items-center gap-3 rounded-xl border border-line px-3 py-2.5 hover:border-sky"><span className="w-2 h-2 rounded-full bg-[#E3A33B] shrink-0" /><span className="text-[13.5px] flex-1 min-w-0">{a.t}</span><Ic n="ChevronRight" s={15} className="text-mute" /></button>)}
+          </div>
+        </div>
+      </div>
+      <div className="mt-4"><ActivityLog /></div>
+    </div>
+  );
+}
+function AdminBookings() {
+  const { db, act } = useStore();
+  const [f, setF] = useState('all');
+  const rows = db.bookings.filter(b => f === 'all' || b.status === f).sort((a, b) => b.date.localeCompare(a.date));
+  const cu = (id) => db.customers.find(c => c.id === id);
+  return (
+    <div>
+      <AHead title="Bookings" sub="Every booking, its cleaner and its money. Change the cleaner to override auto-dispatch."><RunAll /></AHead>
+      <div className="flex flex-wrap gap-2 mb-3">{['all', 'unassigned', 'assigned', 'in_progress', 'completed', 'cancelled'].map(s => <Chip key={s} on={f === s} onClick={() => setF(s)}>{s === 'all' ? 'All' : STATUS[s].label} <span className="text-mute tnum">{s === 'all' ? db.bookings.length : db.bookings.filter(b => b.status === s).length}</span></Chip>)}</div>
+      <div className="card scrollx"><table className="tbl"><thead><tr><th>Booking</th><th>Customer</th><th>When</th><th>Clean</th><th>Cleaner</th><th>Status</th><th className="text-right">Total</th><th className="text-right">Payout</th></tr></thead><tbody>
+        {rows.map(b => (
+          <tr key={b.id} className={b.status === 'unassigned' ? 'bg-[#FFFBF2]' : ''}>
+            <td className="font-medium whitespace-nowrap">{b.id}{b.freq !== 'once' && <Ic n="Repeat" s={13} className="inline ml-1.5 text-mute" />}</td>
+            <td className="whitespace-nowrap">{cu(b.cust).name}<div className="text-[12px] text-mute">{b.hood}, {b.town}</div></td>
+            <td className="whitespace-nowrap">{fmtDay(b.date)}<div className="text-[12px] text-mute">{b.time}</div></td>
+            <td className="whitespace-nowrap">{LEVEL_META[b.level].name}<div className="text-[12px] text-mute">{b.beds} bd · {b.baths} ba</div></td>
+            <td>{['completed', 'cancelled'].includes(b.status) ? (db.cleaners.find(c => c.id === b.cleaner)?.name || '—') :
+              <select aria-label={'Cleaner for ' + b.id} className="field h-9 text-[13px] w-[150px]" value={b.cleaner || ''} onChange={e => act(d => { const x = d.bookings.find(y => y.id === b.id); x.cleaner = e.target.value || null; x.status = e.target.value ? (x.status === 'unassigned' ? 'assigned' : x.status) : 'unassigned'; })}>
+                <option value="">Unassigned</option>{db.cleaners.filter(c => c.status === 'active').map(c => <option key={c.id} value={c.id}>{c.name}{c.towns.includes(b.town) ? '' : ' (outside area)'}</option>)}
+              </select>}</td>
+            <td><Status s={b.status} /></td>
+            <td className="text-right tnum">{money(b.price.total)}</td>
+            <td className="text-right tnum">{money(b.price.payout)}</td>
+          </tr>
+        ))}
+      </tbody></table></div>
+    </div>
+  );
+}
+function AdminCleaners() {
+  const { db, act } = useStore();
+  const [t, setT] = useState('active');
+  const advance = (id, dir) => act(d => { const a = d.applicants.find(x => x.id === id); const i = STAGES.findIndex(s => s.id === a.stage); a.stage = STAGES[Math.min(STAGES.length - 1, i + dir)].id; a.updated = TODAY; a.nudged = false; });
+  const approve = (id) => act(d => { const a = d.applicants.find(x => x.id === id); d.applicants = d.applicants.filter(x => x.id !== id); d.cleaners.push({ id: 'c' + Date.now(), name: a.name, initials: a.name.split(' ').map(w => w[0]).join('').slice(0, 2), towns: [a.town], rating: 5, jobs: 0, status: 'active', available: true, langs: a.lang, insuranceExp: '2027-11-01', joined: TODAY }); d.log.unshift({ id: Math.random().toString(36).slice(2), rule: 'manual', text: `${a.name} approved and activated. Welcome kit sent in ${a.lang}.`, t: 'now' }); });
+  return (
+    <div>
+      <AHead title="Cleaners" sub="Your active pros and everyone working through onboarding.">
+        <div className="flex p-1 rounded-xl bg-white border border-line">{[['active', 'Active'], ['applicants', `Applicants (${db.applicants.length})`]].map(([k, l]) => <button key={k} onClick={() => setT(k)} className={'h-8 px-3 rounded-lg text-[13px] font-semibold ' + (t === k ? 'bg-ink text-white' : 'text-mute')}>{l}</button>)}</div>
+      </AHead>
+      {t === 'active' ? (
+        <div className="card scrollx"><table className="tbl"><thead><tr><th>Cleaner</th><th>Areas</th><th>Rating</th><th>Jobs</th><th>Languages</th><th>Insurance</th><th>Status</th></tr></thead><tbody>
+          {db.cleaners.map(c => { const flagged = db.tickets.some(x => x.cleaner === c.id && x.status === 'open'); return (
+            <tr key={c.id}>
+              <td className="whitespace-nowrap"><div className="flex items-center gap-2.5"><Avatar t={c.initials} size={32} /><div><div className="font-medium">{c.name}</div>{flagged && <span className="pill bg-warn text-warnink h-5 text-[11px]">Quality review</span>}</div></div></td>
+              <td className="min-w-[160px] text-[13px]">{c.towns.join(', ')}</td>
+              <td className="tnum">★ {c.rating}</td><td className="tnum">{c.jobs}</td><td className="whitespace-nowrap text-[13px]">{c.langs}</td>
+              <td className={'whitespace-nowrap ' + (daysFrom(TODAY, c.insuranceExp) <= 30 ? 'text-warnink font-medium' : '')}>{fmtShort(c.insuranceExp)}</td>
+              <td><div className="flex items-center gap-2"><Toggle label={'Active: ' + c.name} on={c.status === 'active'} onChange={v => act(d => { const x = d.cleaners.find(y => y.id === c.id); x.status = v ? 'active' : 'paused'; x.available = v; })} /><span className="text-[12.5px] text-mute">{c.status === 'active' ? 'Active' : 'Paused'}</span></div></td>
+            </tr>); })}
+        </tbody></table></div>
+      ) : (
+        <div className="grid md:grid-cols-2 xl:grid-cols-4 gap-3">
+          {STAGES.slice(0, 4).map(s => (
+            <div key={s.id} className="rounded-2xl bg-white/60 border border-line p-3 min-w-0">
+              <div className="text-[12.5px] font-semibold px-1">{s.name} <span className="text-mute tnum">{db.applicants.filter(a => a.stage === s.id).length}</span></div>
+              <div className="grid gap-2 mt-2">
+                {db.applicants.filter(a => a.stage === s.id).map(a => (
+                  <div key={a.id} className="card p-3 fade">
+                    <div className="font-medium text-[14px]">{a.name}</div>
+                    <div className="text-[12px] text-mute">{a.town} · {a.lang} · {a.exp}</div>
+                    <div className="text-[12px] text-mute">Updated {fmtShort(a.updated)}{a.nudged ? ' · reminder sent' : ''}</div>
+                    <div className="flex gap-1.5 mt-2.5">
+                      {s.id === 'training' ? <button className="btn btn-p btn-s flex-1" onClick={() => approve(a.id)}>Approve</button> : <button className="btn btn-p btn-s flex-1" onClick={() => advance(a.id, 1)}>Next step</button>}
+                      <button className="btn btn-g btn-s" onClick={() => act(d => { d.applicants = d.applicants.filter(x => x.id !== a.id); })}>Decline</button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+function AdminCustomers() {
+  const { db } = useStore();
+  return (
+    <div>
+      <AHead title="Customers" sub="Lifetime value, plans and referrals." />
+      <div className="card scrollx"><table className="tbl"><thead><tr><th>Customer</th><th>Town</th><th>Cleanings</th><th>Plan</th><th className="text-right">Lifetime spend</th><th>Credit</th><th>Referred by</th></tr></thead><tbody>
+        {db.customers.map(c => { const bs = db.bookings.filter(b => b.cust === c.id && b.status !== 'cancelled'); const done = bs.filter(b => b.status === 'completed'); const plan = bs.find(b => b.freq !== 'once'); return (
+          <tr key={c.id}><td className="whitespace-nowrap"><div className="font-medium">{c.name}</div><div className="text-[12px] text-mute">{c.email}</div></td><td className="whitespace-nowrap">{c.hood}, {c.town}</td><td className="tnum">{done.length} done · {bs.length - done.length} upcoming</td><td className="whitespace-nowrap">{plan ? FREQ[plan.freq] : '—'}</td><td className="text-right tnum">{money(done.reduce((t, b) => t + b.price.total, 0))}</td><td className="tnum">{money(c.credits)}</td><td>{c.referredBy ? db.customers.find(x => x.id === c.referredBy).name : '—'}</td></tr>); })}
+      </tbody></table></div>
+    </div>
+  );
+}
+function AdminPayments() {
+  const { db, act } = useStore();
+  const live = db.bookings.filter(b => b.status !== 'cancelled');
+  const done = live.filter(b => b.status === 'completed');
+  const unpaid = done.filter(b => !b.paidOut).reduce((t, b) => t + b.price.payout + (b.tip || 0), 0);
+  const scheduled = db.payouts.filter(p => p.status === 'scheduled').reduce((t, p) => t + p.amount, 0);
+  const cardFees = Math.round(done.reduce((t, b) => t + b.price.total * 0.029 + 0.3, 0));
+  const rev = done.reduce((t, b) => t + b.price.platform, 0);
+  return (
+    <div>
+      <AHead title="Payments" sub="Charges, payouts and fees. Money moves through Stripe Connect.">
+        <button className="btn btn-d" onClick={() => act(() => { }, ['payouts'])}><Ic n="Wallet" s={16} />Batch this week’s payouts</button>
+      </AHead>
+      <div className="grid grid-cols-2 xl:grid-cols-4 gap-3">
+        <Kpi label="Charged for completed cleans" value={money(done.reduce((t, b) => t + b.price.total, 0))} />
+        <Kpi label="Owed to cleaners, not batched" value={money(unpaid)} tone={unpaid ? 'attn' : ''} />
+        <Kpi label="Payouts scheduled Friday" value={money(scheduled)} />
+        <Kpi label="Neatly revenue after card fees" value={money(rev - cardFees)} sub={`Card fees ≈ ${money(cardFees)} (2.9% + 30¢)`} />
+      </div>
+      <div className="card mt-4"><div className="px-5 pt-4 lbl">Payout batches</div><div className="scrollx"><table className="tbl mt-2"><thead><tr><th>Batch</th><th>Cleaner</th><th>Jobs</th><th>Date</th><th>Status</th><th className="text-right">Amount</th><th /></tr></thead><tbody>
+        {db.payouts.map(p => <tr key={p.id}><td className="font-medium">{p.id}</td><td className="whitespace-nowrap">{db.cleaners.find(c => c.id === p.cleaner)?.name}</td><td className="tnum">{p.jobs}</td><td className="whitespace-nowrap">{fmtShort(p.date)}</td><td><span className={'pill ' + (p.status === 'paid' ? 'bg-mint' : 'bg-soft text-deep')}>{p.status === 'paid' ? 'Paid' : 'Scheduled'}</span></td><td className="text-right tnum font-semibold">{money(p.amount)}</td><td className="text-right">{p.status !== 'paid' && <button className="btn btn-g btn-s" onClick={() => act(d => { d.payouts.find(x => x.id === p.id).status = 'paid'; d.bookings.filter(b => b.cleaner === p.cleaner && b.paidOut === 'scheduled').forEach(b => { b.paidOut = 'paid'; }); })}>Send now</button>}</td></tr>)}
+      </tbody></table></div></div>
+      <div className="card mt-4 p-5"><div className="lbl">How money moves on one booking</div>
+        <div className="mt-3 grid sm:grid-cols-4 gap-3 text-[13.5px]">
+          {[['Card saved', 'At booking (no charge yet)'], ['Authorized', '24 hours before the visit'], ['Captured', 'When the cleaner marks it complete'], ['Split', `${100 - db.settings.commissionPct}% of the service + 100% of tips to the cleaner; fee and ${db.settings.commissionPct}% to Neatly`]].map(([t, s], k) => <div key={t} className="rounded-xl bg-mist p-3"><div className="text-[12px] text-mute">Step {k + 1}</div><div className="font-semibold">{t}</div><div className="text-mute text-[12.5px] mt-0.5">{s}</div></div>)}
+        </div>
+      </div>
+    </div>
+  );
+}
+function AdminAutomations() {
+  const { db, act } = useStore();
+  return (
+    <div>
+      <AHead title="Automations" sub="Rules that run the business without you. In the real app they run on a schedule and on every event; here, press Run to process the queue."><RunAll /></AHead>
+      <div className="grid md:grid-cols-2 gap-3">
+        {db.automations.map(a => (
+          <div key={a.id} className={'card p-4 flex gap-3 ' + (a.on ? '' : 'opacity-60')}>
+            <span className="w-10 h-10 rounded-xl bg-soft grid place-items-center text-deep shrink-0"><Ic n={RULE_ICON[a.id]} s={18} /></span>
+            <div className="min-w-0 flex-1">
+              <div className="flex items-start justify-between gap-2"><div className="font-semibold">{a.name}</div><Toggle label={a.name} on={a.on} onChange={v => act(d => { d.automations.find(x => x.id === a.id).on = v; })} /></div>
+              <div className="text-[13px] mt-1"><span className="text-mute">When</span> {a.trigger.charAt(0).toLowerCase() + a.trigger.slice(1)}</div>
+              <div className="text-[13px] mt-0.5"><span className="text-mute">Then</span> {a.action.charAt(0).toLowerCase() + a.action.slice(1)}</div>
+              <div className="flex gap-2 mt-2"><span className="pill bg-mist border border-line text-mute">{a.channel}</span><span className="pill bg-mist border border-line text-mute tnum">Ran {a.runs}×</span></div>
+            </div>
+          </div>
+        ))}
+      </div>
+      <div className="mt-4"><ActivityLog max={20} /></div>
+    </div>
+  );
+}
+function AdminSupport() {
+  const { db, act } = useStore();
+  const resolve = (id, how) => act(d => {
+    const t = d.tickets.find(x => x.id === id); t.status = 'resolved'; t.resolution = how;
+    if (how === 'reclean') { const b = d.bookings.find(x => x.id === t.booking); const nb = { ...JSON.parse(JSON.stringify(b)), id: 'B-' + (++d.seq), date: '2026-11-04', time: '1:00 PM', status: 'unassigned', cleaner: null, rating: null, review: '', freq: 'once', paidOut: false, flags: { reclean: true }, addons: [], bonus: 0, credit: 0, promoOff: 0, notes: 'Re-clean: focus on bathrooms.' }; nb.price = { ...quote(d.settings, nb), total: 0 }; d.bookings.push(nb); d.log.unshift({ id: Math.random().toString(36).slice(2), rule: 'manual', text: `Free re-clean ${nb.id} created for ${t.booking}. Auto-dispatch will find a different cleaner.`, t: 'now' }); }
+  }, how === 'reclean' ? ['dispatch'] : undefined);
+  return (
+    <div>
+      <AHead title="Support" sub="Tickets from customers and cleaners, plus everything automations open for you." />
+      <div className="grid gap-3">
+        {db.tickets.map(t => (
+          <div key={t.id} className="card p-5 flex flex-wrap gap-4 items-start">
+            <span className={'pill ' + (t.type === 'Re-clean' ? 'bg-bad text-badink' : 'bg-soft text-deep')}>{t.type}</span>
+            <div className="flex-1 min-w-[220px]"><div className="font-semibold">{t.id} · {t.subject}</div><div className="text-[13px] text-mute">{db.customers.find(c => c.id === t.cust)?.name} · {t.booking} · opened {fmtShort(t.created)}</div>{t.resolution && <div className="text-[13px] text-deep mt-1">Resolved: {{ reclean: 'free re-clean scheduled', refund: '50% refunded', reply: 'answered' }[t.resolution]}</div>}</div>
+            {t.status === 'open' ? <div className="flex flex-wrap gap-2">
+              {t.type === 'Re-clean' && <button className="btn btn-p btn-s" onClick={() => resolve(t.id, 'reclean')}>Schedule free re-clean</button>}
+              {t.type === 'Re-clean' && <button className="btn btn-g btn-s" onClick={() => resolve(t.id, 'refund')}>Refund 50%</button>}
+              <button className="btn btn-g btn-s" onClick={() => resolve(t.id, 'reply')}>{t.type === 'Re-clean' ? 'Close' : 'Send receipt and close'}</button>
+            </div> : <span className="pill bg-mint">Resolved</span>}
+          </div>
+        ))}
+        <div className="text-[13px] text-mute">Tip: rate a past clean 3 stars or fewer in the customer account, or press Run automations, to see the re-clean guarantee open a ticket here.</div>
+      </div>
+    </div>
+  );
+}
+function Num({ id, label, value, on, suffix, prefix }) {
+  return <div><label htmlFor={id} className="text-[12.5px] text-mute">{label}</label><div className="relative mt-1">{prefix && <span className="absolute left-3 top-1/2 -translate-y-1/2 text-mute">{prefix}</span>}<input id={id} type="number" className={'field tnum ' + (prefix ? 'pl-7' : '')} value={value} onChange={e => on(Math.max(0, Number(e.target.value) || 0))} />{suffix && <span className="absolute right-3 top-1/2 -translate-y-1/2 text-mute text-[13px]">{suffix}</span>}</div></div>;
+}
+function AdminPricing() {
+  const { db, act } = useStore();
+  const s = db.settings;
+  const setS = (fn) => act(d => { fn(d.settings); d.bookings.filter(b => !['completed', 'cancelled'].includes(b.status) && !b.flags.reclean).forEach(b => { const keep = b.bonus; b.price = quote(d.settings, b); b.price.payout += keep; }); });
+  const ex = quote(s, { level: 'standard', beds: 3, baths: 2, sqft: '1,500–2,500', addons: [], freq: 'once' });
+  const [zip, setZip] = useState('06001');
+  const zipOpts = Object.keys(ZIPS).filter(z => !s.zips.includes(z));
+  const curZip = zipOpts.includes(zip) ? zip : zipOpts[0];
+  return (
+    <div>
+      <AHead title="Pricing and areas" sub="Change a number and every open quote, booking and payout updates." />
+      <div className="grid xl:grid-cols-[1fr_340px] gap-4 items-start">
+        <div className="grid gap-4 min-w-0">
+          <div className="card p-5"><div className="lbl">Starting prices (1 bed, 1 bath)</div><div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-3">{Object.keys(LEVEL_META).map(k => <Num key={k} id={'pr-' + k} label={LEVEL_META[k].name} prefix="$" value={s.levels[k]} on={v => setS(x => { x.levels[k] = v; })} />)}</div></div>
+          <div className="card p-5"><div className="lbl">Size, fees and commission</div><div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-3">
+            <Num id="pr-bed" label="Each extra bedroom" prefix="$" value={s.perBed} on={v => setS(x => { x.perBed = v; })} />
+            <Num id="pr-bath" label="Each extra bathroom" prefix="$" value={s.perBath} on={v => setS(x => { x.perBath = v; })} />
+            <Num id="pr-fee" label="Customer service fee" suffix="%" value={s.feePct} on={v => setS(x => { x.feePct = Math.min(30, v); })} />
+            <Num id="pr-com" label="Commission on service" suffix="%" value={s.commissionPct} on={v => setS(x => { x.commissionPct = Math.min(40, v); })} />
+          </div></div>
+          <div className="card p-5"><div className="lbl">Plan discounts</div><div className="grid grid-cols-3 gap-3 mt-3">{['weekly', 'biweekly', 'monthly'].map(k => <Num key={k} id={'pr-' + k} label={FREQ[k]} suffix="%" value={s.discounts[k]} on={v => setS(x => { x.discounts[k] = Math.min(30, v); })} />)}</div></div>
+          <div className="card p-5"><div className="lbl">Service area</div>
+            <div className="flex flex-wrap gap-2 mt-3">{s.zips.map(z => <span key={z} className="pill bg-soft text-deep h-8 pl-3 pr-1.5">{z} · {ZIPS[z]}<button aria-label={'Remove ' + z} className="w-5 h-5 rounded-full grid place-items-center hover:bg-white" onClick={() => setS(x => { x.zips = x.zips.filter(y => y !== z); })}><Ic n="X" s={12} /></button></span>)}</div>
+            <div className="flex gap-2 mt-3 max-w-[420px]"><label htmlFor="add-zip" className="sr-only">Add a ZIP code</label><select id="add-zip" className="field" value={curZip || ''} onChange={e => setZip(e.target.value)}>{zipOpts.map(z => <option key={z} value={z}>{z} · {ZIPS[z]}{db.waitlist.some(w => w.zip === z && !w.notified) ? ' (waitlist)' : ''}</option>)}</select><button className="btn btn-p" onClick={() => curZip && act(d => { if (!d.settings.zips.includes(curZip)) d.settings.zips.push(curZip); }, ['waitlist'])}>Open ZIP</button></div>
+            <div className="text-[12.5px] text-mute mt-2">Opening a ZIP emails its waitlist automatically. Avon (06001) and Glastonbury (06033) have people waiting.</div>
+          </div>
+        </div>
+        <div className="card p-5 xl:sticky xl:top-[88px]"><div className="lbl">Example: Standard, 3 bd, 2 ba</div>
+          <div className="mt-3 grid gap-1.5 text-[14px]">
+            <div className="flex justify-between"><span className="text-mute">Customer pays</span><span className="font-semibold tnum">{money(ex.total)}</span></div>
+            <div className="flex justify-between"><span className="text-mute">Cleaner earns</span><span className="tnum">{money(ex.payout)}</span></div>
+            <div className="flex justify-between"><span className="text-mute">Neatly keeps</span><span className="tnum">{money(ex.platform)}</span></div>
+            <div className="flex justify-between"><span className="text-mute">Card fee (est.)</span><span className="tnum">{money(-Math.round(ex.total * 0.029 + 0.3))}</span></div>
+          </div>
+          <div className="mt-4 h-3 rounded-full overflow-hidden flex"><div className="bg-sky" style={{ width: `${ex.payout / ex.total * 100}%` }} /><div className="bg-deep" style={{ width: `${ex.platform / ex.total * 100}%` }} /></div>
+          <div className="flex justify-between text-[12px] text-mute mt-1.5"><span>Cleaner {Math.round(ex.payout / ex.total * 100)}%</span><span>Neatly {Math.round(ex.platform / ex.total * 100)}%</span></div>
+          <div className="text-[12px] text-mute mt-3">Cleaner hourly ≈ {money(Math.round(ex.payout / ex.hours))}/h over {ex.hours} h.</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ============ BLUEPRINT ============ */
+const BP = [
+  { id: 'overview', title: 'What we’re building', body: [
+    ['p', 'Neatly is three products on one shared database. The customer website books and manages cleanings. The cleaner portal lets independent pros apply, pick jobs, work and get paid. The admin console runs the business, and most of it runs itself through automations. Build it as a mobile-first website (installable as an app on phones) first; native iPhone and Android apps come later, once the business works.'],
+    ['grid', [['Customer website', 'Landing pages, instant quote, booking, account, plans, messages, ratings, referrals'], ['Cleaner portal', 'Application in 3 languages, onboarding, job board, schedule, active job, earnings'], ['Admin console', 'Dashboard, dispatch, cleaners, customers, payments, support, pricing, automations'], ['Backend', 'Database, payments, texts and emails, maps, scheduled jobs, file storage, audit log']]],
+  ] },
+  { id: 'customer', title: 'Customer side: every feature', body: [
+    ['h', 'Sign up and first visit'], ['ul', ['Welcome tutorial on the first visit: 4 short screens, skippable, replayable from Account', 'Create an account with Sign in with Apple, Sign in with Google, or email and password', 'Verify the mobile number with a text code before the first booking', 'Guided tour of the home screen right after sign-up', 'DoorDash-style navigation: Home, Book, Bookings and Account in a bottom tab bar on phones and a sidebar on computers', 'Search bar for services and extras; address picker at the top of every screen', 'Booking in 3 steps: your home, your clean, time and payment, with the total always visible', 'Welcome offer applied automatically to the first booking']],
+    ['h', 'Find and trust'], ['ul', ['Home page with instant price and ZIP check (waitlist if the area isn’t open)', 'A page per service and per town (“house cleaning West Hartford”) for Google search', 'Pricing page, FAQ, how it works, re-clean guarantee page, trust and safety page', 'Google Business profile and reviews linked from the site', 'Live chat or help widget on every page']],
+    ['h', 'Book'], ['ul', ['Account with email or phone code, or guest checkout that creates an account', 'Saved home profile: address (autocomplete), size, bedrooms, bathrooms, pets, parking', 'Cleaning level, extras, rooms to skip, supplies preference, notes, entry details (encrypted)', 'Real availability calendar (only times a cleaner can actually take)', 'One-time or plan (weekly, every 2 weeks, every 4 weeks) with automatic discount', 'Promo codes, referral credit, gift cards (later)', 'Card or Apple Pay / Google Pay saved securely by Stripe; no charge until after the clean', 'Clear cancellation and late-cancel rules shown before paying']],
+    ['h', 'Manage'], ['ul', ['Live status: booked, cleaner confirmed, on the way, cleaning, done', 'Cleaner profile with photo, rating and number of cleanings', 'Reschedule, cancel, skip a plan visit, pause or end a plan', 'In-app messages and masked calls/texts (phone numbers stay private)', 'Rate, review and tip after each clean; one-tap re-clean request within 24 hours', 'Receipts and invoices by email and in the account, downloadable', 'Referral page with personal code and credit balance', 'Notification settings (text, email), payment methods, multiple homes', 'Delete account and download my data']],
+  ] },
+  { id: 'cleaner', title: 'Cleaner side: every feature', body: [
+    ['h', 'Apply and onboard'], ['ul', ['Cleaner account with Apple, Google or email before applying', 'Application in English, Português and Español', 'Areas, services, experience, availability, supplies they bring', 'Identity check and background check through a screening company, with a separate written consent form', 'Cleaner agreement signed electronically', 'Payout setup through Stripe (bank account and tax details are collected by Stripe, not stored by Neatly)', 'Insurance certificate upload with expiry date', 'Short training: Neatly’s cleaning standards, checklist, safety, app tutorial, plus a quiz', 'Profile photo and bio shown to customers']],
+    ['h', 'Work'], ['ul', ['Availability on/off switch and weekly availability calendar, time off', 'Job board (list and map) with filters: distance, pay, type, date, length', 'Full scope before accepting: rooms, extras, rooms to skip, notes, pets, time, payout', 'Accept or decline with no penalty for declining', 'Exact address and entry details unlock only after assignment, on the day', 'Directions, check-in and check-out with timestamps, task checklist, optional before/after photos', 'Message the customer, report a problem, safety button that alerts support', 'Running late and can’t-make-it buttons that notify the customer and re-dispatch']],
+    ['h', 'Get paid and grow'], ['ul', ['Earnings for today, this week, all time; pending and paid payouts', 'Weekly automatic payouts, optional instant payout for a small fee', '100% of tips', 'Yearly tax form delivered through Stripe', 'Ratings, badges and tiers (more job priority for top-rated pros)', 'Referral bonus for bringing other cleaners', 'Help center and support chat']],
+  ] },
+  { id: 'admin', title: 'Admin console: every feature', body: [
+    ['ul', ['Dashboard: bookings, revenue, fill rate, rating, plans, cleaners online, things that need attention', 'Bookings and dispatch board: search, filter, assign or reassign, reschedule, cancel, refund, add notes', 'Cleaners: applicant pipeline, approve or decline, documents and expiry dates, pause or deactivate, quality flags, earnings', 'Customers: history, lifetime spend, plans, credits, notes, block abusive accounts', 'Payments: charges, payout batches, refunds, disputes (chargebacks), promo codes, credits', 'Pricing and service area: prices, fees, commission, discounts, ZIP codes, holiday blackout dates', 'Automations: turn each rule on or off, edit timing and message text, see every run', 'Support inbox: tickets from customers and cleaners, incident reports, re-clean scheduling', 'Message templates for texts and emails in 3 languages', 'Reports and exports (CSV for the accountant): revenue, payouts, fees, taxes collected', 'Team roles: owner, operations, support (each sees only what they need), with 2-step login', 'Audit log: who changed what and when']],
+  ] },
+  { id: 'automations', title: 'Automations (what runs by itself)', body: [
+    ['table', ['When this happens', 'The system does this', 'Channel'], [
+      ['Booking confirmed', 'Sends confirmation; offers the job to the best-matched cleaner', 'Email, SMS, push'],
+      ['No cleaner accepts in 2 hours', 'Widens the radius, adds a bonus, alerts ops', 'Push, ops alert'],
+      ['24 hours before', 'Reminds customer and cleaner; authorizes the card', 'SMS, email, Stripe'],
+      ['Cleaner starts trip / arrives / finishes', 'Updates the customer’s live status', 'SMS, push'],
+      ['Clean completed', 'Charges the card, sends receipt, asks for rating and tip', 'Stripe, email'],
+      ['Rating 3 stars or lower', 'Opens a ticket, offers free re-clean, flags the cleaner', 'Ticket, email'],
+      ['Plan visit booked or done', 'Creates the next visit with the same cleaner', 'Calendar'],
+      ['Every Friday', 'Batches payouts for all completed jobs', 'Stripe'],
+      ['Applicant stuck 3+ days', 'Sends a reminder in their language', 'SMS, email'],
+      ['Document expires in 30 days', 'Asks for a new one; pauses new jobs if it lapses', 'Email, in-app'],
+      ['Booking started but not finished', 'Emails the saved quote 2 hours later', 'Email'],
+      ['Referred friend’s first clean', 'Adds credit to both accounts', 'Credit, email'],
+      ['New ZIP opened', 'Emails that ZIP’s waitlist', 'Email'],
+      ['Customer inactive 45 days', 'Sends a “time for a clean?” offer', 'Email'],
+      ['Payment fails', 'Retries, asks the customer to update the card, holds the next visit', 'Email, SMS'],
+      ['Cleaner late or cancels', 'Notifies customer, re-dispatches, records reliability', 'SMS, push'],
+    ]],
+  ] },
+  { id: 'payments', title: 'Payments strategy', body: [
+    ['p', 'Use Stripe Connect. Neatly is the platform; each cleaner gets their own connected account. Stripe handles card security, bank payouts, identity and tax details for payouts, and yearly tax forms, so Neatly never stores card or bank numbers.'],
+    ['ol', ['At booking: save the customer’s card (no charge).', '24 hours before: authorize the full amount so a failed card is caught early.', 'After the clean: capture the charge.', 'Split automatically: the cleaner’s share of the service price plus 100% of tips goes to the cleaner’s Stripe account; the service fee and commission stay with Neatly.', 'Every Friday: Stripe pays cleaners’ bank accounts. Optional instant payout for a small fee.', 'Refunds and re-cleans: full or partial refund from the admin console; the re-clean is a new $0 booking that still pays the cleaner who does it.', 'Late cancellations: the fee is charged and most of it goes to the cleaner who held the time.', 'Disputes (chargebacks): check-in times, checklist and photos are the evidence.']],
+    ['p', 'Standard card processing in the US costs 2.9% + 30¢ per charge on Stripe’s published pricing; Connect adds small payout fees. Build these into the service fee. Confirm current prices on stripe.com before launch.'],
+  ] },
+  { id: 'data', title: 'Database tables', body: [
+    ['table', ['Table', 'Key fields'], [
+      ['users', 'id, role (customer, cleaner, admin), name, email, phone, language, created'],
+      ['homes', 'customer, address, ZIP, size, beds, baths, pets, parking, entry details (encrypted)'],
+      ['cleaners', 'user, towns, services, availability, rating, status, Stripe account id, documents, tier'],
+      ['applications', 'person, stage, consent records, check status, agreement signed date'],
+      ['bookings', 'customer, home, cleaner, date, time, level, extras, skip rooms, notes, status, plan id, price breakdown'],
+      ['plans', 'customer, home, frequency, cleaner, next date, paused'],
+      ['payments', 'booking, Stripe payment id, amount, fee, refund, status'],
+      ['payouts', 'cleaner, period, amount, jobs, Stripe transfer id, status'],
+      ['reviews', 'booking, from, to, stars, text, tip'],
+      ['tickets', 'type, booking, opened by, messages, status, resolution'],
+      ['messages', 'booking, sender, text, time'],
+      ['automation_runs', 'rule, target, result, time'],
+      ['settings', 'prices, fees, commission, discounts, ZIP codes, policy windows'],
+      ['audit_log', 'who, what, before, after, time'],
+    ]],
+  ] },
+  { id: 'stack', title: 'Tools and tech', body: [
+    ['table', ['Need', 'Recommended', 'Why'], [
+      ['Website and app', 'Next.js, hosted on Vercel', 'Fast, good for Google search, installable on phones'],
+      ['Database, logins, files', 'Supabase (Postgres)', 'Row-level security keeps each user to their own data'],
+      ['Sign in with Apple and Google', 'Supabase Auth', 'Apple sign-in needs an Apple Developer account; Google needs a Google Cloud sign-in app'],
+      ['Payments and payouts', 'Stripe Connect (Express accounts)', 'Cards, splits, payouts, tax forms'],
+      ['Texts and masked numbers', 'Twilio', 'SMS, private calling; needs business texting registration'],
+      ['Email', 'Postmark or Resend', 'Reliable receipts and reminders'],
+      ['Maps and addresses', 'Google Maps Platform', 'Address autocomplete, distance, job map'],
+      ['Background checks', 'A screening company (e.g., Checkr)', 'Handles consent forms and reports'],
+      ['Scheduled automations', 'Supabase cron + Stripe webhooks', 'Runs reminders, payouts, follow-ups'],
+      ['Analytics and errors', 'PostHog, Sentry', 'See where bookings drop off; catch bugs'],
+      ['Faster MVP option', 'Sharetribe (marketplace builder)', 'Launch in weeks with less code, customize later'],
+    ]],
+  ] },
+  { id: 'notifications', title: 'Messages the system sends', body: [
+    ['grid', [['Customer', 'Booking confirmed · Cleaner assigned · Reminder 24 h · On the way · Finished + receipt · Rate and tip · Re-clean scheduled · Plan’s next visit · Card failed · Referral credit · Area now open'], ['Cleaner', 'Application received · Next onboarding step · Approved · New job near you · Job assigned · Reminder 24 h · Schedule change · Payout sent · Document expiring · Rating received'], ['Admin', 'Unfilled job · Low rating · Incident report · Payment dispute · Applicant waiting · Daily summary email']]],
+    ['p', 'Every message exists in English, Português and Español, and each person gets their own language.'],
+  ] },
+  { id: 'policies', title: 'Policies and documents to prepare', body: [
+    ['p', 'Write these before launch and have a Connecticut business attorney review them. This list is a planning checklist, not legal advice.'],
+    ['ul', ['Terms of Service for customers', 'Cleaner Services Agreement', 'Privacy Policy (what data is collected, how long it’s kept, how to delete it)', 'Cancellation, late-cancel and refund policy', 'Re-clean guarantee terms', 'Community standards and safety policy for both sides', 'Background check disclosure and consent form (provided with the screening company)', 'Consent to receive texts, and business texting registration with carriers', 'Cookie notice and accessibility statement (site should meet WCAG 2.1 AA)', 'Business setup: LLC, EIN, business bank account, general liability insurance, Connecticut tax registration if any services are taxable (confirm with an accountant)']],
+  ] },
+  { id: 'security', title: 'Privacy and security', body: [
+    ['ul', ['Cards and bank details live only in Stripe; Neatly never stores them', 'Entry codes encrypted, visible only to the assigned cleaner on the day, then hidden', 'Exact addresses hidden until a cleaner is assigned', 'Masked phone numbers for all calls and texts', 'Each role sees only its own data (row-level security); admins use 2-step login', 'Audit log of every admin change; daily database backups', 'Background check reports seen only by authorized staff and deleted on a schedule']],
+  ] },
+  { id: 'phases', title: 'Build phases', body: [
+    ['table', ['Phase', 'What ships', 'Goal'], [
+      ['1 · MVP (about 8–12 weeks)', 'Landing + quote, booking, Stripe payments, cleaner application + job board, admin bookings, reminders, receipts, reviews', 'First 50 paid cleanings in West Hartford'],
+      ['2 · Run itself', 'Auto-dispatch, recurring plans, weekly payouts, re-clean flow, referral program, support inbox, 3 languages', 'Fewer than 10 minutes of manual work per booking'],
+      ['3 · Scale', 'Map view, tiers and bonuses, masked calls, reports, team roles, new-area launch tools, native apps', 'Open new towns without adding staff'],
+    ]],
+  ] },
+  { id: 'launch', title: 'Launch checklist', body: [
+    ['ul', ['Business registered, bank account open, insurance active', 'Policies written and reviewed', 'Stripe Connect approved; test charges, refunds and payouts end to end', 'Business texting registration approved', '10+ cleaners fully onboarded in the first towns', 'Prices tested with real customers', 'Google Business profile live; town pages indexed', 'Every automation tested with test accounts', 'Support coverage hours set; help center articles written', 'Backups, error alerts and admin 2-step login turned on']],
+  ] },
+];
+function Blueprint() {
+  return (
+    <div className="gutter"><div className="wrapw py-10 grid lg:grid-cols-[230px_1fr] gap-10 items-start">
+      <nav className="hidden lg:block sticky top-[88px]"><div className="lbl mb-3">Contents</div><div className="grid gap-1">{BP.map(s => <a key={s.id} href={'#bp-' + s.id} onClick={(e) => { e.preventDefault(); document.getElementById('bp-' + s.id)?.scrollIntoView({ behavior: 'smooth' }); }} className="text-[13.5px] text-mute hover:text-ink py-1">{s.title}</a>)}</div></nav>
+      <div className="doc min-w-0 max-w-[820px]">
+        <div className="eyebrow">Blueprint</div>
+        <h1 className="text-[36px] font-semibold mt-3 leading-tight">Everything Neatly needs, for customers, cleaners and you.</h1>
+        <p className="text-[16px] text-mute mt-3">Use this as the build brief for a developer or a no-code builder. The prototype tabs show how each piece works; this page lists the full scope.</p>
+        {BP.map(s => (
+          <section key={s.id} id={'bp-' + s.id} className="mt-12 scroll-mt-[88px]">
+            <h2 className="text-[24px] font-semibold pb-3 border-b border-line">{s.title}</h2>
+            <div className="grid gap-4 mt-5">
+              {s.body.map((blk, k) => {
+                const [t, v, rows] = blk;
+                if (t === 'p') return <p key={k} className="text-[15px] text-ink/85">{v}</p>;
+                if (t === 'h') return <h3 key={k} className="text-[16px] font-semibold mt-2">{v}</h3>;
+                if (t === 'ul') return <ul key={k} className="grid gap-2">{v.map(x => <li key={x} className="flex gap-2.5 text-[14.5px]"><Ic n="Check" s={15} w={2.4} className="text-deep shrink-0 mt-[3px]" /><span>{x}</span></li>)}</ul>;
+                if (t === 'ol') return <ol key={k} className="grid gap-2.5">{v.map((x, i) => <li key={x} className="flex gap-3 text-[14.5px]"><span className="w-6 h-6 rounded-full bg-soft text-deep text-[12px] font-semibold grid place-items-center shrink-0">{i + 1}</span><span>{x}</span></li>)}</ol>;
+                if (t === 'grid') return <div key={k} className="grid sm:grid-cols-2 gap-3">{v.map(([a, b]) => <div key={a} className="card p-4"><div className="font-semibold">{a}</div><div className="text-[13.5px] text-mute mt-1">{b}</div></div>)}</div>;
+                if (t === 'table') return <div key={k} className="card scrollx"><table className="tbl"><thead><tr>{v.map(h => <th key={h}>{h}</th>)}</tr></thead><tbody>{rows.map(r => <tr key={r[0]}>{r.map((c, i) => <td key={i} className={i === 0 ? 'font-medium min-w-[150px]' : 'min-w-[160px]'}>{c}</td>)}</tr>)}</tbody></table></div>;
+                return null;
+              })}
+            </div>
+          </section>
+        ))}
+        <p className="text-[12.5px] text-mute mt-12 border-t border-line pt-4">Prices, fees and timelines in this prototype are sample planning numbers. Confirm tool pricing with each provider and have policies reviewed by a Connecticut attorney and accountant before launch.</p>
+      </div>
+    </div></div>
+  );
+}
+
+/* ============ SHELL ============ */
+const VIEWS = [['customer', 'Customer website', 'Globe'], ['cleaner', 'Cleaner portal', 'Briefcase'], ['admin', 'Admin console', 'LayoutDashboard'], ['blueprint', 'Blueprint', 'FileText']];
+function App() {
+  const read = () => { const h = (location.hash || '').slice(1); return VIEWS.some(v => v[0] === h) ? h : 'customer'; };
+  const [view, setView] = useState(read);
+  const [account, setAccount] = useState(() => LS.get('neatly.account'));
+  const [db, setDb] = useState(() => { const d = seed(); const a = LS.get('neatly.account'); if (a) addAccount(d, a); return d; });
+  const dbRef = useRef(db); dbRef.current = db;
+  const [toasts, setToasts] = useState([]);
+  const toast = (logs) => logs.forEach((l, k) => { const id = Math.random().toString(36).slice(2); setTimeout(() => { setToasts(t => [...t.slice(-3), { id, ...l }]); setTimeout(() => setToasts(t => t.filter(x => x.id !== id)), 5200); }, k * 350); });
+  const act = (fn, autos) => {
+    const d = structuredClone(dbRef.current);
+    fn(d);
+    let logs = [];
+    if (autos !== undefined) logs = runAutomations(d, autos);
+    dbRef.current = d; setDb(d);
+    if (logs.length) toast(logs);
+    else if (autos === null) toast([{ rule: 'manual', text: 'Automations ran. Nothing new to process right now.' }]);
+  };
+  const later = (fn, ms) => setTimeout(fn, ms);
+  const signIn = (acc) => { LS.set('neatly.account', acc); LS.set('neatly.saved', acc); act(d => addAccount(d, acc)); setAccount(acc); window.scrollTo(0, 0); };
+  const signOut = () => { LS.del('neatly.account'); setAccount(null); act(d => { d.me = 'cu1'; }); window.scrollTo(0, 0); };
+  useEffect(() => { const on = () => setView(read()); window.addEventListener('hashchange', on); return () => window.removeEventListener('hashchange', on); }, []);
+  const go = (v) => { setView(v); try { history.replaceState(null, '', '#' + v); } catch (e) { } window.scrollTo(0, 0); };
+  return (
+    <Store.Provider value={{ db, act, later }}>
+      <div className="sticky z-50 bg-white/95 backdrop-blur border-b border-line gutter" style={{ top: 'env(safe-area-inset-top, 0px)' }}>
+        <div className="wrapw h-[60px] flex items-center gap-3">
+          <div className="flex items-center gap-2 shrink-0"><Logo size={28} /><span className="font-semibold tracking-tight hidden sm:inline">Neatly</span><span className="pill bg-mist border border-line text-mute hidden md:inline-flex">Working prototype</span></div>
+          <div className="hscroll flex-1 min-w-0"><div className="flex gap-1 w-max ml-auto p-1 rounded-xl bg-mist border border-line">
+            {VIEWS.map(([k, l, i]) => <button key={k} onClick={() => go(k)} aria-current={view === k ? 'page' : undefined} className={'h-9 px-3 rounded-lg text-[13px] font-semibold flex items-center gap-1.5 whitespace-nowrap ' + (view === k ? 'bg-white shadow-sm text-ink' : 'text-mute hover:text-ink')}><Ic n={i} s={15} />{l}</button>)}
+          </div></div>
+        </div>
+      </div>
+      {view === 'customer' && <CustomerApp goPortal={() => go('cleaner')} account={account} signIn={signIn} signOut={signOut} />}
+      {view === 'cleaner' && <CleanerPortal />}
+      {view === 'admin' && <Admin />}
+      {view === 'blueprint' && <Blueprint />}
+      <div className={'gutter border-t border-line bg-white ' + (view === 'customer' && account ? 'pb-20 lg:pb-0' : '')}><div className="wrapw py-4 text-[12px] text-mute">Prototype with sample people and prices. All three portals share one live data set: a booking made on the customer website appears in the admin console and on Maria’s job board. Your sign-in is simulated and saved only in this browser. Reloading the page resets everything.</div></div>
+      <div className="toastbox" aria-live="polite">
+        {toasts.map(t => <div key={t.id} className="fade card lift p-3.5 flex gap-3 bg-white"><span className="w-8 h-8 rounded-lg bg-ink text-sky grid place-items-center shrink-0"><Ic n="Zap" s={15} /></span><div className="min-w-0"><div className="text-[11.5px] font-semibold text-deep">{(db.automations.find(a => a.id === t.rule) || { name: 'Automation' }).name}</div><div className="text-[13px] leading-snug">{t.text}</div></div></div>)}
+      </div>
+    </Store.Provider>
+  );
+}
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+
+</body></html>
