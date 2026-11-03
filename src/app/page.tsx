@@ -1,69 +1,107 @@
-import Image from "next/image";
+import Link from "next/link";
+import { PriceCalculator } from "@/components/PriceCalculator";
+import { ZipCheck } from "@/components/ZipCheck";
+import { Button } from "@/components/ui/Button";
+import { Card } from "@/components/ui/Card";
+import { LEVELS } from "@/lib/pricing";
+import { TOWNS } from "@/lib/service-areas";
 
-export default function Home() {
+const TRUST_ITEMS = [
+  "Background-checked, vetted pros",
+  "Book in 60 seconds",
+  "Pay only after it's done",
+  "Free re-clean guarantee",
+];
+
+export default function HomePage() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+    <div>
+      <section className="bg-mist border-b border-line">
+        <div className="max-w-[1200px] mx-auto px-4 py-16 sm:py-20 grid lg:grid-cols-2 gap-10 items-center">
+          <div>
+            <span className="text-xs font-semibold tracking-wider uppercase text-deep">
+              Greater Hartford, CT
+            </span>
+            <h1 className="text-4xl sm:text-5xl font-semibold tracking-tight mt-2">
+              A clean home, booked in 60 seconds.
+            </h1>
+            <p className="text-base text-mute mt-4 max-w-[480px]">
+              Neatly connects you with vetted, independent cleaning professionals. See your price
+              instantly, book online, and pay only after the clean is done.
+            </p>
+            <div className="flex flex-wrap gap-3 mt-7">
+              <Button href="/#calculator" variant="primary">
+                Get your instant price
+              </Button>
+              <Button href="/how-it-works" variant="ghost">
+                How it works
+              </Button>
+            </div>
+            <ul className="flex flex-wrap gap-x-6 gap-y-2 mt-8 text-sm text-ink/80">
+              {TRUST_ITEMS.map((item) => (
+                <li key={item} className="flex items-center gap-1.5">
+                  <span aria-hidden="true" className="text-deep">
+                    ✓
+                  </span>
+                  {item}
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div id="zip-check">
+            <ZipCheck />
+          </div>
+        </div>
+      </section>
+
+      <section id="calculator" className="max-w-[1200px] mx-auto px-4 py-16 sm:py-20 scroll-mt-20">
+        <div className="max-w-[640px]">
+          <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight">See your price now</h2>
+          <p className="text-sm text-mute mt-2">
+            No account needed. Tell us about your home and get an instant estimate.
           </p>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+        <div className="mt-8">
+          <PriceCalculator />
         </div>
-      </main>
+      </section>
+
+      <section className="bg-mist border-y border-line">
+        <div className="max-w-[1200px] mx-auto px-4 py-16 sm:py-20">
+          <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight">Pick your clean</h2>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-8">
+            {LEVELS.map((level) => (
+              <Card key={level.id} className="p-5">
+                <div className="font-semibold">{level.name}</div>
+                <p className="text-sm text-mute mt-1.5">{level.description}</p>
+                <Link
+                  href={`/services/${level.id}`}
+                  className="text-sm font-semibold text-deep mt-4 inline-block hover:underline"
+                >
+                  Learn more →
+                </Link>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="max-w-[1200px] mx-auto px-4 py-16 sm:py-20">
+        <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight">Where we clean</h2>
+        <p className="text-sm text-mute mt-2">
+          Currently serving five towns in Greater Hartford, with more on the way.
+        </p>
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-8">
+          {TOWNS.map((town) => (
+            <Link key={town.slug} href={`/cleaning/${town.slug}`}>
+              <Card className="p-5 h-full hover:border-sky transition">
+                <div className="font-semibold">{town.name}, CT</div>
+                <p className="text-sm text-mute mt-1.5">{town.blurb}</p>
+              </Card>
+            </Link>
+          ))}
+        </div>
+      </section>
     </div>
   );
 }
